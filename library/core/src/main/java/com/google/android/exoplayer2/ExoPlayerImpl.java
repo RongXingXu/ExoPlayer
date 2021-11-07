@@ -67,7 +67,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 /**
  * An {@link ExoPlayer} implementation.
  */
-/* package */ final class ExoPlayerImpl extends BasePlayer {
+/* package */
+final class ExoPlayerImpl extends BasePlayer {
     
     static {
         ExoPlayerLibraryInfo.registerModule("goog.exo.exoplayer");
