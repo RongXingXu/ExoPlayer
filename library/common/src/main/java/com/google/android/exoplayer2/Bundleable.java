@@ -32,21 +32,25 @@ import android.os.Bundle;
  * }</pre>
  */
 public interface Bundleable {
-
-  /** Returns a {@link Bundle} representing the information stored in this object. */
-  Bundle toBundle();
-
-  /** Interface for the static {@code CREATOR} field of {@link Bundleable} classes. */
-  interface Creator<T extends Bundleable> {
-
+    
     /**
-     * Restores a {@link Bundleable} instance from a {@link Bundle} produced by {@link
-     * Bundleable#toBundle()}.
-     *
-     * <p>It guarantees the compatibility of {@link Bundle} representations produced by different
-     * versions of {@link Bundleable#toBundle()} by providing best default values for missing
-     * fields. It throws an exception if any essential fields are missing.
+     * Returns a {@link Bundle} representing the information stored in this object.
      */
-    T fromBundle(Bundle bundle);
-  }
+    Bundle toBundle();
+    
+    /**
+     * Interface for the static {@code CREATOR} field of {@link Bundleable} classes.
+     */
+    interface Creator<T extends Bundleable> {
+        
+        /**
+         * Restores a {@link Bundleable} instance from a {@link Bundle} produced by {@link
+         * Bundleable#toBundle()}.
+         *
+         * <p>It guarantees the compatibility of {@link Bundle} representations produced by different
+         * versions of {@link Bundleable#toBundle()} by providing best default values for missing
+         * fields. It throws an exception if any essential fields are missing.
+         */
+        T fromBundle(Bundle bundle);
+    }
 }
