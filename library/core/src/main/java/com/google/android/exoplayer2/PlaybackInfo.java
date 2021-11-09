@@ -30,7 +30,8 @@ import java.util.List;
 /**
  * Information about an ongoing playback.
  */
-/* package */ final class PlaybackInfo {
+/* package */
+final class PlaybackInfo {
     
     /**
      * Placeholder media period id used while the timeline is empty and no period id is specified.

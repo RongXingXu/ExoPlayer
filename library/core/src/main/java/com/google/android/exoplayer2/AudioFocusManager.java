@@ -41,7 +41,8 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 /**
  * Manages requesting and responding to changes in audio focus.
  */
-/* package */ final class AudioFocusManager {
+/* package */
+final class AudioFocusManager {
     
     /**
      * Interface to allow AudioFocusManager to give commands to a player.
