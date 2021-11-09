@@ -68,6 +68,7 @@ public interface LoadControl {
      * @return The duration of media to retain in the buffer prior to the current playback position,
      * in microseconds.
      */
+    // 为了支持能够快速向后搜索，返回缓冲区中，当前播放位置到最早保留的视频position的时间段
     long getBackBufferDurationUs();
     
     /**

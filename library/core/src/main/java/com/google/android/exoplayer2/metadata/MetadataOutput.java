@@ -16,13 +16,15 @@
 package com.google.android.exoplayer2.metadata;
 
 
-/** Receives metadata output. */
+/**
+ * Receives metadata output.
+ */
 public interface MetadataOutput {
-
-  /**
-   * Called when there is metadata associated with current playback time.
-   *
-   * @param metadata The metadata.
-   */
-  void onMetadata(Metadata metadata);
+    
+    /**
+     * Called when there is metadata associated with current playback time.
+     *
+     * @param metadata The metadata.
+     */
+    void onMetadata(Metadata metadata);
 }

@@ -37,7 +37,8 @@ import org.checkerframework.checker.nullness.compatqual.NullableType;
 /**
  * Holds a {@link MediaPeriod} with information required to play it as part of a timeline.
  */
-/* package */ final class MediaPeriodHolder {
+/* package */
+final class MediaPeriodHolder {
     
     private static final String TAG = "MediaPeriodHolder";
     
