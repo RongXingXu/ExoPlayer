@@ -25,6 +25,8 @@ import com.google.android.exoplayer2.upstream.Allocator;
  */
 public interface LoadControl {
     
+    static final String TAG = "LoadControl";
+    
     /**
      * Called by the player when prepared with a new source.
      */
@@ -88,6 +90,9 @@ public interface LoadControl {
      * minus {@link #getBackBufferDurationUs()}, rather than any sample before or at that
      * position.
      */
+    /*
+    * TODO
+    * */
     boolean retainBackBufferFromKeyframe();
     
     /**
@@ -102,6 +107,15 @@ public interface LoadControl {
      * @param playbackSpeed      The current factor by which playback is sped up.
      * @return Whether the loading should continue.
      */
+    /*
+    * 用途：决策是否需要继续加载数据，Called by the player
+    *
+    * @param playbackPositionUs：当前播放位置（微秒μs），相对于 {@link Timeline.Period period} 的开始。如果该时段的播放尚未开始，则该值将为负数，其大小等于前一时段仍要播放的任何媒体的持续时间。（这里简单介绍下Period，ExoPlayer支持播放列表，一个播放任务可以包含多个视频，Period是播放任务中，其中一个视频）
+    * @param bufferedDurationUs：当前已缓存的视频时间段（微秒μs）
+    * @param playbackSpeed：当前播放速度（*1，*2等）
+    *
+    * @return：如果此方法返回 {@code true}将会继续加载数据。
+    * */
     boolean shouldContinueLoading(
             long playbackPositionUs, long bufferedDurationUs, float playbackSpeed);
     
@@ -121,6 +135,19 @@ public interface LoadControl {
      *                           configured.
      * @return Whether playback should be allowed to start or resume.
      */
+    /*
+    * 用途：用于决策是否开始真正播放（启播，seek缓冲成功后播放）。
+    * 在尚未开始播放时，播放器在加载Source时会重复调用该接口。
+    * LoadControl可以选择返回 {@code false} 直到满足某些条件
+    * （例如，缓冲了一定数量的媒体）。
+    *
+    * @param bufferedDurationUs：当前已缓存的视频时间段
+    * @param playbackSpeed：当前播放速度（*1，*2等）
+    * @param rebuffering：播放器是否正在rebuffering。这里rebuffering是指缓冲自然耗尽，而不是用户操作引起。so，在初始缓冲期间和由于seek进行缓冲时，此参数为false。
+    * @param targetLiveOffsetUs：当前直播位置的偏移量，如果不是直播流，此参数为{@link C#TIME_UNSET}
+    *
+    * @return 是否应允许开始或恢复播放。
+    * */
     boolean shouldStartPlayback(
             long bufferedDurationUs, float playbackSpeed, boolean rebuffering, long targetLiveOffsetUs);
 }

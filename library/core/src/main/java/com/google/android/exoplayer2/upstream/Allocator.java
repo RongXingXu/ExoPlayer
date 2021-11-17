@@ -48,15 +48,24 @@ public interface Allocator {
      * Hints to the allocator that it should make a best effort to release any excess {@link
      * Allocation}s.
      */
+    /*
+    * 提示分配器应尽最大努力释放任何多余的 {@link Allocation}。
+    * */
     void trim();
     
     /**
      * Returns the total number of bytes currently allocated.
      */
+    /*
+    * 返回当前分配的总字节数。
+    * */
     int getTotalBytesAllocated();
     
     /**
      * Returns the length of each individual {@link Allocation}.
      */
+    /*
+    * 返回每个单独 {@link Allocation} 的长度。
+    * */
     int getIndividualAllocationLength();
 }

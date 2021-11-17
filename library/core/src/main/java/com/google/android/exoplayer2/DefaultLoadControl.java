@@ -285,11 +285,15 @@ public class DefaultLoadControl implements LoadControl {
     private final long maxBufferUs;
     private final long bufferForPlaybackUs;
     private final long bufferForPlaybackAfterRebufferUs;
+    
+    // 如果设置为 {@link C#LENGTH_UNSET}，则targetBufferBytes会在onTracksSelected时被重新计算覆盖。
     private final int targetBufferBytesOverwrite;
+    // LoadControl 是否优先考虑缓冲区时间约束，还是优先缓冲区大小约束。true：优先时间约束
     private final boolean prioritizeTimeOverSizeThresholds;
     private final long backBufferDurationUs;
     private final boolean retainBackBufferFromKeyframe;
     
+    // 目标缓冲区大小限制（字节）
     private int targetBufferBytes;
     private boolean isLoading;
     
@@ -337,6 +341,7 @@ public class DefaultLoadControl implements LoadControl {
         this.maxBufferUs = Util.msToUs(maxBufferMs);
         this.bufferForPlaybackUs = Util.msToUs(bufferForPlaybackMs);
         this.bufferForPlaybackAfterRebufferUs = Util.msToUs(bufferForPlaybackAfterRebufferMs);
+        
         this.targetBufferBytesOverwrite = targetBufferBytes;
         this.targetBufferBytes =
                 targetBufferBytesOverwrite != C.LENGTH_UNSET
@@ -390,8 +395,15 @@ public class DefaultLoadControl implements LoadControl {
     @Override
     public boolean shouldContinueLoading(
             long playbackPositionUs, long bufferedDurationUs, float playbackSpeed) {
+        Log.d(TAG, "[shouldContinueLoading] playbackPositionUs = " + playbackPositionUs +
+                ", bufferedDurationUs" + bufferedDurationUs +
+                ", playbackSpeed" + playbackSpeed
+        );
+        // 标识位：判断当前缓存的数据是否已经达到目标缓冲大小
         boolean targetBufferSizeReached = allocator.getTotalBytesAllocated() >= targetBufferBytes;
+        // 获取播放最小缓冲时间限制
         long minBufferUs = this.minBufferUs;
+        // 倍数转换，不同倍速，最小缓冲时间限制标准不一样
         if (playbackSpeed > 1) {
             // The playback speed is faster than real time, so scale up the minimum required media
             // duration to keep enough media buffered for a playout duration of minBufferUs.
@@ -399,29 +411,53 @@ public class DefaultLoadControl implements LoadControl {
                     Util.getMediaDurationForPlayoutDuration(minBufferUs, playbackSpeed);
             minBufferUs = min(mediaDurationMinBufferUs, maxBufferUs);
         }
+        
+        // 最小缓冲时间限制的限制有点绕hhhh，最小缓存时间限制不能低于500ms
         // Prevent playback from getting stuck if minBufferUs is too small.
         minBufferUs = max(minBufferUs, 500_000);
         if (bufferedDurationUs < minBufferUs) {
+            // 当前已缓冲视频时间小于最小缓冲时间限制，满足下面条件其中一个都返回true，也就是需要继续loading：
+            // 1、LoadController优先考虑时间约束；
+            // 2、当前缓存的数据未已经达到目标缓冲大小
             isLoading = prioritizeTimeOverSizeThresholds || !targetBufferSizeReached;
             if (!isLoading && bufferedDurationUs < 500_000) {
+                // 图啥。。。
                 Log.w(
                         "DefaultLoadControl",
                         "Target buffer size reached with less than 500ms of buffered media data.");
             }
         } else if (bufferedDurationUs >= maxBufferUs || targetBufferSizeReached) {
+            // 满足下面条件其中一个都返回false，也就是不需要继续loading：
+            // 1、当前已缓冲视频时间大于最小缓冲时间限制；
+            // 2、当前缓存的数据已经达到目标缓冲大小
             isLoading = false;
-        } // Else don't change the loading state.
+        }
+        // Else don't change the loading state.
         return isLoading;
     }
     
     @Override
     public boolean shouldStartPlayback(
             long bufferedDurationUs, float playbackSpeed, boolean rebuffering, long targetLiveOffsetUs) {
+        Log.d(TAG, "[shouldStartPlayback] bufferedDurationUs = " + bufferedDurationUs +
+                ", playbackSpeed" + playbackSpeed +
+                ", rebuffering" + rebuffering +
+                ", targetLiveOffsetUs" + targetLiveOffsetUs
+        );
+        // 获取当前已缓冲视频时间，有倍速转换，不同倍速不一样
         bufferedDurationUs = Util.getPlayoutDurationForMediaDuration(bufferedDurationUs, playbackSpeed);
+        // 获取播放最小缓冲时间限制
         long minBufferDurationUs = rebuffering ? bufferForPlaybackAfterRebufferUs : bufferForPlaybackUs;
+        
+        // 直播逻辑，可以先忽略，非直播场景targetLiveOffsetUs一定等于C.TIME_UNSET
         if (targetLiveOffsetUs != C.TIME_UNSET) {
             minBufferDurationUs = min(targetLiveOffsetUs / 2, minBufferDurationUs);
         }
+        
+        // 满足下面其中一个条件就返回true，可以播放
+        // 1、最小buffer限制小于0；
+        // 2、当前缓冲大小大于播放最小缓冲限制；
+        // 3、优先考虑缓冲size条件下，判断缓冲总size是否大于targetBufferBytes
         return minBufferDurationUs <= 0
                 || bufferedDurationUs >= minBufferDurationUs
                 || (!prioritizeTimeOverSizeThresholds
