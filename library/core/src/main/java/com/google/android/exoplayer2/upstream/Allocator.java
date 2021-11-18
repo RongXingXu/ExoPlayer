@@ -18,6 +18,9 @@ package com.google.android.exoplayer2.upstream;
 /**
  * A source of allocations.
  */
+/*
+* 资源分配器，可以理解为缓存池，可以反复利用
+* */
 public interface Allocator {
     
     /**

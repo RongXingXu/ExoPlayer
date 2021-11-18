@@ -377,6 +377,9 @@ public class DefaultLoadControl implements LoadControl {
         reset(true);
     }
     
+    /*
+    * 获取资源分配器
+    * */
     @Override
     public Allocator getAllocator() {
         return allocator;
