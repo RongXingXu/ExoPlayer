@@ -33,14 +33,20 @@ public final class DefaultAllocator implements Allocator {
     
     private static final int AVAILABLE_EXTRA_CAPACITY = 100;
     
+    // reset时，是否释放内存
     private final boolean trimOnReset;
+    // 每个单独Allocation大小
     private final int individualAllocationSize;
     @Nullable
+    // 初始缓存占位，取决于初始化时availableCount是否>0，<=0则为空
     private final byte[] initialAllocationBlock;
+    // 纯打辅助，用途只有一个，release单个Allocation的时候，通过singleAllocationReleaseHolder组成一个数组
     private final Allocation[] singleAllocationReleaseHolder;
     
     private int targetBufferSize;
+    // 已经分配的Allocation个数
     private int allocatedCount;
+    // 池子里面还剩的Allocation个数
     private int availableCount;
     private @NullableType Allocation[] availableAllocations;
     
@@ -65,6 +71,10 @@ public final class DefaultAllocator implements Allocator {
      * @param individualAllocationSize The length of each individual {@link Allocation}.
      * @param initialAllocationCount   The number of allocations to create up front.
      */
+    /*
+    *
+    * @param initialAllocationCount 预先创建的Allocation数量。
+    * */
     public DefaultAllocator(
             boolean trimOnReset, int individualAllocationSize, int initialAllocationCount) {
         Assertions.checkArgument(individualAllocationSize > 0);
@@ -84,7 +94,10 @@ public final class DefaultAllocator implements Allocator {
         }
         singleAllocationReleaseHolder = new Allocation[1];
     }
-    
+    /*
+    * 重置
+    * trimOnReset未true则清理所有memory
+    * */
     public synchronized void reset() {
         if (trimOnReset) {
             setTargetBufferSize(0);
@@ -92,6 +105,7 @@ public final class DefaultAllocator implements Allocator {
     }
     
     public synchronized void setTargetBufferSize(int targetBufferSize) {
+        // 很明显了这个判断就是为了重新分配空间，比如：原来是100，现在只要80，下面trim就会清除掉多出来的20
         boolean targetBufferSizeReduced = targetBufferSize < this.targetBufferSize;
         this.targetBufferSize = targetBufferSize;
         if (targetBufferSizeReduced) {
@@ -99,6 +113,9 @@ public final class DefaultAllocator implements Allocator {
         }
     }
     
+    /*
+    * 池子里面有就从池子里面拿，没有就重新new一个Allocation
+    * */
     @Override
     public synchronized Allocation allocate() {
         allocatedCount++;
@@ -118,17 +135,26 @@ public final class DefaultAllocator implements Allocator {
         release(singleAllocationReleaseHolder);
     }
     
+    /*
+    * 这里不难看出调用DefaultAllocator.release(Allocation[] allocations)，
+    * 并不是将allocations释放，而是回收等待下次使用，所以外面一旦调用release接口，
+    * 外部一定要将release的allocations置空清理掉
+    * */
     @Override
     public synchronized void release(Allocation[] allocations) {
         if (availableCount + allocations.length >= availableAllocations.length) {
+            // availableAllocations 扩容，扩到原来的两倍或者【availableCount + allocations.length】大小，哪个大，扩到哪个
             availableAllocations =
                     Arrays.copyOf(
                             availableAllocations,
                             max(availableAllocations.length * 2, availableCount + allocations.length));
         }
+        // 回收release的allocations
         for (Allocation allocation : allocations) {
             availableAllocations[availableCount++] = allocation;
         }
+        
+        // 从已经分配的allocatedCount中删除
         allocatedCount -= allocations.length;
         // Wake up threads waiting for the allocated size to drop.
         notifyAll();
@@ -138,6 +164,9 @@ public final class DefaultAllocator implements Allocator {
     public synchronized void trim() {
         int targetAllocationCount = Util.ceilDivide(targetBufferSize, individualAllocationSize);
         int targetAvailableCount = max(0, targetAllocationCount - allocatedCount);
+        
+        // 这里可以看出availableCount如果==0或者targetAvailableCount > availableCount，
+        // 代表没有多余空间可以挤出来或者多余的空间不够，直接return
         if (targetAvailableCount >= availableCount) {
             // We're already at or below the target.
             return;
@@ -172,6 +201,7 @@ public final class DefaultAllocator implements Allocator {
         }
         
         // Discard allocations beyond the target.
+        // 清理末尾的memory，这里多余的Allocation才真正释放
         Arrays.fill(availableAllocations, targetAvailableCount, availableCount, null);
         availableCount = targetAvailableCount;
     }

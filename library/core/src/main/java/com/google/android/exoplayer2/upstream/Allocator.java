@@ -57,7 +57,7 @@ public interface Allocator {
      * Returns the total number of bytes currently allocated.
      */
     /*
-    * 返回当前分配的总字节数。
+    * 返回所有当前分配的字节数（sum）。
     * */
     int getTotalBytesAllocated();
     
