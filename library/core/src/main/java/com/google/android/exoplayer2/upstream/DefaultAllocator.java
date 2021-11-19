@@ -48,6 +48,7 @@ public final class DefaultAllocator implements Allocator {
     private int allocatedCount;
     // 池子里面还剩的Allocation个数
     private int availableCount;
+    // Allocation池，初始化最大空间为AVAILABLE_EXTRA_CAPACITY + availableCount个。后面回收，空间不够会做扩容
     private @NullableType Allocation[] availableAllocations;
     
     /**
@@ -120,6 +121,9 @@ public final class DefaultAllocator implements Allocator {
     public synchronized Allocation allocate() {
         allocatedCount++;
         Allocation allocation;
+        // availableCount > 0，说明当前有可用的Allocation，直接从availableAllocations取出来用
+        // availableCount <= 0，直接new一个Allocation给外部使用
+        // 一旦allocate，DefaultAllocator不在持有Allocation引用
         if (availableCount > 0) {
             allocation = Assertions.checkNotNull(availableAllocations[--availableCount]);
             availableAllocations[availableCount] = null;
@@ -129,6 +133,10 @@ public final class DefaultAllocator implements Allocator {
         return allocation;
     }
     
+    /*
+    * singleAllocationReleaseHolder存在就是为了这个接口。
+    * release单个Allocation的时候，通过singleAllocationReleaseHolder组成一个数组，传给真正release接口
+    * */
     @Override
     public synchronized void release(Allocation allocation) {
         singleAllocationReleaseHolder[0] = allocation;
@@ -162,11 +170,12 @@ public final class DefaultAllocator implements Allocator {
     
     @Override
     public synchronized void trim() {
+        // size换算成Allocation个数
         int targetAllocationCount = Util.ceilDivide(targetBufferSize, individualAllocationSize);
+        // 获取目标剩余Allocation个数
         int targetAvailableCount = max(0, targetAllocationCount - allocatedCount);
         
-        // 这里可以看出availableCount如果==0或者targetAvailableCount > availableCount，
-        // 代表没有多余空间可以挤出来或者多余的空间不够，直接return
+        // 这里可以看出availableCount如果==0或者targetAvailableCount > availableCount，代表当前可用的缓存空间，并不满足目标空间大小，直接return
         if (targetAvailableCount >= availableCount) {
             // We're already at or below the target.
             return;
@@ -176,6 +185,7 @@ public final class DefaultAllocator implements Allocator {
             // Some allocations are backed by an initial block. We need to make sure that we hold onto all
             // such allocations. Re-order the available allocations so that the ones backed by the initial
             // block come first.
+            // 排序把初始预创建缓存，放在缓存池最前面
             int lowIndex = 0;
             int highIndex = availableCount - 1;
             while (lowIndex <= highIndex) {

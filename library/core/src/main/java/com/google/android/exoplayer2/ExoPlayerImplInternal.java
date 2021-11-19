@@ -1248,6 +1248,8 @@ final class ExoPlayerImplInternal
             throws ExoPlaybackException {
         stopRenderers();
         isRebuffering = false;
+        
+        // 状态位置为 STATE_BUFFERING
         if (forceBufferingState || playbackInfo.playbackState == Player.STATE_READY) {
             setState(Player.STATE_BUFFERING);
         }

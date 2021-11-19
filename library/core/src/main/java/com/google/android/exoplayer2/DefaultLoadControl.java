@@ -279,11 +279,17 @@ public class DefaultLoadControl implements LoadControl {
         }
     }
     
+    // 资源分配器
     private final DefaultAllocator allocator;
     
+    // 最小缓存时间限制
     private final long minBufferUs;
+    // 最大缓存时间限制
     private final long maxBufferUs;
+    
+    // 启播最低时间限制（rebuffer==false场景使用）
     private final long bufferForPlaybackUs;
+    // 启播最低时间限制（rebuffer==true场景使用）
     private final long bufferForPlaybackAfterRebufferUs;
     
     // 如果设置为 {@link C#LENGTH_UNSET}，则targetBufferBytes会在onTracksSelected时被重新计算覆盖。
@@ -295,6 +301,7 @@ public class DefaultLoadControl implements LoadControl {
     
     // 目标缓冲区大小限制（字节）
     private int targetBufferBytes;
+    // 状态位，是否在loading
     private boolean isLoading;
     
     /**
@@ -497,6 +504,9 @@ public class DefaultLoadControl implements LoadControl {
         }
     }
     
+    /*
+    * 获取每个track默认目标缓存值
+    * */
     private static int getDefaultBufferSize(@C.TrackType int trackType) {
         switch (trackType) {
             case C.TRACK_TYPE_DEFAULT:

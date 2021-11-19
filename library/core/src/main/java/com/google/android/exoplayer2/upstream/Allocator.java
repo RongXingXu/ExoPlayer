@@ -31,6 +31,10 @@ public interface Allocator {
      *
      * @return The {@link Allocation}.
      */
+    /*
+    * 分配一块Allocation。
+    * 调用者使用完Allocation之后应该通过调用{@link #release(Allocation)}回收。
+    * */
     Allocation allocate();
     
     /**
@@ -38,6 +42,9 @@ public interface Allocator {
      *
      * @param allocation The {@link Allocation} being released.
      */
+    /*
+    * 回收Allocation
+    * */
     void release(Allocation allocation);
     
     /**
@@ -45,6 +52,9 @@ public interface Allocator {
      *
      * @param allocations The array of {@link Allocation}s being released.
      */
+    /*
+     * 回收一组Allocation
+     * */
     void release(Allocation[] allocations);
     
     /**

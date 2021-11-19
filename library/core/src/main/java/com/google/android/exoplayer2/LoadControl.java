@@ -30,6 +30,9 @@ public interface LoadControl {
     /**
      * Called by the player when prepared with a new source.
      */
+    /*
+    * player prepared一个资源的时候调用
+    * */
     void onPrepared();
     
     /**
