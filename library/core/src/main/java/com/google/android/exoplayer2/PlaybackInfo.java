@@ -94,6 +94,9 @@ final class PlaybackInfo {
     /**
      * Whether playback should proceed when {@link #playbackState} == {@link Player#STATE_READY}.
      */
+    /*
+    * 当 {@link #playbackState} == {@link Player#STATE_READY} 时是否继续播放。
+    * */
     public final boolean playWhenReady;
     /**
      * Reason why playback is suppressed even though {@link #playWhenReady} is {@code true}.

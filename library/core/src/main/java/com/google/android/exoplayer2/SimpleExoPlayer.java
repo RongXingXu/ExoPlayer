@@ -1123,7 +1123,9 @@ public class SimpleExoPlayer extends BasePlayer
 
     @Override
     public void prepare() {
+        // 线程检查，播放接口调用必须要在主线程
         verifyApplicationThread();
+        
         boolean playWhenReady = getPlayWhenReady();
         @AudioFocusManager.PlayerCommand
         int playerCommand = audioFocusManager.updateAudioFocus(playWhenReady, Player.STATE_BUFFERING);

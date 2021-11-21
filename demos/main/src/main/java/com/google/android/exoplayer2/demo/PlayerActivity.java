@@ -256,45 +256,67 @@ public class PlayerActivity extends AppCompatActivity
     /**
      * @return Whether initialization was successful.
      */
+    /*
+    * 初始化播放器
+    * */
     protected boolean initializePlayer() {
         if (player == null) {
             Intent intent = getIntent();
-            
+            // 根据intent创建播放信息
             mediaItems = createMediaItems(intent);
             if (mediaItems.isEmpty()) {
                 return false;
             }
             
+            // 是否使用扩展解码器
             boolean preferExtensionDecoders =
                     intent.getBooleanExtra(IntentUtil.PREFER_EXTENSION_DECODERS_EXTRA, false);
+            
+            // 获取render构造器
             RenderersFactory renderersFactory =
                     DemoUtil.buildRenderersFactory(/* context= */ this, preferExtensionDecoders);
+            
+            // 获取MediaSource构造器
             MediaSourceFactory mediaSourceFactory =
                     new DefaultMediaSourceFactory(dataSourceFactory)
                             .setAdsLoaderProvider(this::getAdsLoader)
                             .setAdViewProvider(playerView);
             
+            // 获取track选择器
             trackSelector = new DefaultTrackSelector(/* context= */ this);
             lastSeenTracksInfo = TracksInfo.EMPTY;
+            
+            // 创建player实例
             player =
                     new ExoPlayer.Builder(/* context= */ this, renderersFactory)
                             .setMediaSourceFactory(mediaSourceFactory)
                             .setTrackSelector(trackSelector)
                             .build();
+            
+            // 设置player环境
+            //
             player.setTrackSelectionParameters(trackSelectionParameters);
+            // 设置播放器事件监听
             player.addListener(new PlayerEventListener());
             player.addAnalyticsListener(new EventLogger(trackSelector));
             player.setAudioAttributes(AudioAttributes.DEFAULT, /* handleAudioFocus= */ true);
+            // 设置自动播标志位
             player.setPlayWhenReady(startAutoPlay);
+            
             playerView.setPlayer(player);
             debugViewHelper = new DebugTextViewHelper(player, debugTextView);
             debugViewHelper.start();
         }
+        // 调整播放position
         boolean haveStartPosition = startItemIndex != C.INDEX_UNSET;
         if (haveStartPosition) {
             player.seekTo(startItemIndex, startPosition);
         }
+        
+        // 设置播放数据
         player.setMediaItems(mediaItems, /* resetPosition= */ !haveStartPosition);
+        
+        // 调用播放接口
         player.prepare();
         updateButtonVisibility();
         return true;

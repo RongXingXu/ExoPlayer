@@ -63,6 +63,12 @@ public class DefaultRenderersFactory implements RenderersFactory {
      * Modes for using extension renderers. One of {@link #EXTENSION_RENDERER_MODE_OFF}, {@link
      * #EXTENSION_RENDERER_MODE_ON} or {@link #EXTENSION_RENDERER_MODE_PREFER}.
      */
+    /**
+     * 使用扩展渲染器的模式，
+     * 1、EXTENSION_RENDERER_MODE_OFF：不支持扩展；
+     * 2、EXTENSION_RENDERER_MODE_ON：支持扩展；
+     * 3、EXTENSION_RENDERER_MODE_PREFER：支持扩展，并优先选择扩展类型
+     * */
     @Documented
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({EXTENSION_RENDERER_MODE_OFF, EXTENSION_RENDERER_MODE_ON, EXTENSION_RENDERER_MODE_PREFER})
@@ -98,10 +104,12 @@ public class DefaultRenderersFactory implements RenderersFactory {
     
     private final Context context;
     private final DefaultMediaCodecAdapterFactory codecAdapterFactory;
+    //
     @ExtensionRendererMode
     private int extensionRendererMode;
     private long allowedVideoJoiningTimeMs;
     private boolean enableDecoderFallback;
+    // MediaCodec选择器，它返回首选解码器给定的格式。
     private MediaCodecSelector mediaCodecSelector;
     private boolean enableFloatOutput;
     private boolean enableAudioTrackPlaybackParams;
@@ -313,6 +321,7 @@ public class DefaultRenderersFactory implements RenderersFactory {
             TextOutput textRendererOutput,
             MetadataOutput metadataRendererOutput) {
         ArrayList<Renderer> renderersList = new ArrayList<>();
+        // 构建视频流Render
         buildVideoRenderers(
                 context,
                 extensionRendererMode,
@@ -326,6 +335,7 @@ public class DefaultRenderersFactory implements RenderersFactory {
         AudioSink audioSink =
                 buildAudioSink(context, enableFloatOutput, enableAudioTrackPlaybackParams, enableOffload);
         if (audioSink != null) {
+            // 构建音频renders
             buildAudioRenderers(
                     context,
                     extensionRendererMode,
@@ -336,12 +346,14 @@ public class DefaultRenderersFactory implements RenderersFactory {
                     audioRendererEventListener,
                     renderersList);
         }
+        // 构建文本 renders
         buildTextRenderers(
                 context,
                 textRendererOutput,
                 eventHandler.getLooper(),
                 extensionRendererMode,
                 renderersList);
+        // 构建Metadata renders
         buildMetadataRenderers(
                 context,
                 metadataRendererOutput,
@@ -368,6 +380,20 @@ public class DefaultRenderersFactory implements RenderersFactory {
      *                                  seamlessly join an ongoing playback, in milliseconds.
      * @param out                       An array to which the built renderers should be appended.
      */
+    /**
+     *  构建视频renders
+     * @param context
+     * @param extensionRendererMode     render扩展模式@ExtensionRendererMode，
+     * @param mediaCodecSelector        A decoder selector.
+     * @param enableDecoderFallback     Whether to enable fallback to lower-priority decoders if decoder
+     *                                  initialization fails. This may result in using a decoder that is slower/less efficient than
+     *                                  the primary decoder.
+     * @param eventHandler              A handler associated with the main thread's looper.
+     * @param eventListener             An event listener.
+     * @param allowedVideoJoiningTimeMs The maximum duration for which video renderers can attempt to
+     *                                  seamlessly join an ongoing playback, in milliseconds.
+     * @param out                       An array to which the built renderers should be appended.
+    */
     protected void buildVideoRenderers(
             Context context,
             @ExtensionRendererMode int extensionRendererMode,
@@ -377,6 +403,7 @@ public class DefaultRenderersFactory implements RenderersFactory {
             VideoRendererEventListener eventListener,
             long allowedVideoJoiningTimeMs,
             ArrayList<Renderer> out) {
+        // 创建视频MediaCodec解码 Render
         MediaCodecVideoRenderer videoRenderer =
                 new MediaCodecVideoRenderer(
                         context,
@@ -389,15 +416,19 @@ public class DefaultRenderersFactory implements RenderersFactory {
                         MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY);
         out.add(videoRenderer);
         
+        // 不支持扩展类型直接return
         if (extensionRendererMode == EXTENSION_RENDERER_MODE_OFF) {
             return;
         }
+        
+        // 如果优先扩展类型，则将视频render index置0，将后面要插入的扩展类型，放在MediaCodec解码 Render前面；否则后面插入的扩展类型，放在MediaCodec解码 Render后面
         int extensionRendererIndex = out.size();
         if (extensionRendererMode == EXTENSION_RENDERER_MODE_PREFER) {
             extensionRendererIndex--;
         }
         
         try {
+            // 尝试增加扩展解码器Render LibvpxVideoRenderer，VP9解码支持
             // Full class names used for constructor args so the LINT rule triggers if any of them move.
             Class<?> clazz = Class.forName("com.google.android.exoplayer2.ext.vp9.LibvpxVideoRenderer");
             Constructor<?> constructor =
@@ -423,6 +454,7 @@ public class DefaultRenderersFactory implements RenderersFactory {
         }
         
         try {
+            // 尝试增加扩展解码器Render Libgav1VideoRenderer，av1解码支持
             // Full class names used for constructor args so the LINT rule triggers if any of them move.
             Class<?> clazz = Class.forName("com.google.android.exoplayer2.ext.av1.Libgav1VideoRenderer");
             Constructor<?> constructor =
@@ -625,6 +657,17 @@ public class DefaultRenderersFactory implements RenderersFactory {
      * @return The {@link AudioSink} to which the audio renderers will output. May be {@code null} if
      * no audio renderers are required. If {@code null} is returned then {@link
      * #buildAudioRenderers} will not be called.
+     */
+    /**
+     * 构建一个音频渲染器将输出的 {@link AudioSink}
+     *
+     * @param context
+     * @param enableFloatOutput                 是否启用浮点音频输出的使用(如果 available)。
+     * @param enableAudioTrackPlaybackParams    是否启用使用{@link android.media.AudioTrack#setPlaybackParams(PlaybackParams)}设置播放速度，如果支持。
+     * @param enableOffload                     是否为支持的格式启用音频卸载（如果 available）。
+     *
+     * @return 音频渲染器将输出到的 {@link AudioSink}。
+     * 如果不需要音频渲染器，可能为 {@code null} 。如果返回 {@code null}，则 {@link #buildAudioRenderers} 不会被调用。
      */
     @Nullable
     protected AudioSink buildAudioSink(

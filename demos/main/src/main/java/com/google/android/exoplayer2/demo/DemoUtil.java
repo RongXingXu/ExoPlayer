@@ -87,6 +87,7 @@ public final class DemoUtil {
     
     public static RenderersFactory buildRenderersFactory(
             Context context, boolean preferExtensionRenderer) {
+        // 标志位，mode只有三个值，分别代表1、不支持扩展，2、支持扩展，3、支持扩展并优先使用扩展
         @DefaultRenderersFactory.ExtensionRendererMode
         int extensionRendererMode =
                 useExtensionRenderers()

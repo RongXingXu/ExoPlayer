@@ -30,6 +30,9 @@ public interface MediaCodecSelector {
      * Default implementation of {@link MediaCodecSelector}, which returns the preferred decoder for
      * the given format.
      */
+    /**
+     * {@link MediaCodecSelector} 的默认实现，它返回首选解码器给定的格式。
+     * */
     MediaCodecSelector DEFAULT = MediaCodecUtil::getDecoderInfos;
     
     /**

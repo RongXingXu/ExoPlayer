@@ -80,14 +80,23 @@ final class AudioFocusManager {
     /**
      * Do not play.
      */
+    /*
+    * 不要播放
+    * */
     public static final int PLAYER_COMMAND_DO_NOT_PLAY = -1;
     /**
      * Do not play now. Wait for callback to play.
      */
+    /*
+    * 当前不要播放，等回调回来播放
+    * */
     public static final int PLAYER_COMMAND_WAIT_FOR_CALLBACK = 0;
     /**
      * Play freely.
      */
+    /*
+    * 只要ready就播放
+    * */
     public static final int PLAYER_COMMAND_PLAY_WHEN_READY = 1;
     
     /**

@@ -37,6 +37,16 @@ public interface RenderersFactory {
      * @param metadataRendererOutput     An output for metadata renderers.
      * @return The {@link Renderer instances}.
      */
+    /**
+     * 创建exoplayer的渲染器实例
+     *
+     * @param eventHandler               事件handler，exoplayer线程模型中的应用线程，用于事件回调，大部分都在主线程
+     * @param videoRendererEventListener 视频回调事件监听
+     * @param audioRendererEventListener 音频回调事件监听
+     * @param textRendererOutput         文本输出接收器
+     * @param metadataRendererOutput     metadata输出接收器
+     * @return The {@link Renderer instances}.
+     */
     Renderer[] createRenderers(
             Handler eventHandler,
             VideoRendererEventListener videoRendererEventListener,

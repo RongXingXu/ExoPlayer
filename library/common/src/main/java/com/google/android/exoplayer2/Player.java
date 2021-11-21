@@ -1010,6 +1010,10 @@ public interface Player {
      *
      * <p>All methods have no-op default implementations to allow selective overrides.
      */
+    /**
+     * 播放器事件监听
+     * 所有监听事件都允许被覆盖
+     */
     interface Listener extends EventListener {
         
         @Override
