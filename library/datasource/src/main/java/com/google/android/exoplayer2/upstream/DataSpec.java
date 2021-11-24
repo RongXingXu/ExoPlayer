@@ -283,6 +283,9 @@ public final class DataSpec {
      * Indicates there are known external factors that might prevent the data from being loaded at
      * full network speed (e.g. server throttling or unfinished live media chunks).
      */
+    /*
+    * 表示存在可能阻止以全网速加载数据的已知外部因素（例如服务器节流或未完成的实时媒体块）。
+    * */
     public static final int FLAG_MIGHT_NOT_USE_FULL_NETWORK_SPEED = 1 << 3;
     
     /**

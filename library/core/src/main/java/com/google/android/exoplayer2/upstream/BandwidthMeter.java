@@ -27,6 +27,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * Provides estimates of the currently available bandwidth.
  */
+/*
+* 提供当前可用带宽的估计值。
+* */
 public interface BandwidthMeter {
     
     /**
@@ -47,11 +50,24 @@ public interface BandwidthMeter {
          * @param bytesTransferred The number of bytes transferred since the last callback.
          * @param bitrateEstimate  The estimated bitrate in bits/sec.
          */
+        /**
+         * 周期性调用，声明已经传输字节或者预估码率已经change
+         *
+         * <p>注意：预估码率通常需要自更多的信息得出，而不仅仅是 {@code bytesTransferred} 和 {@code elapsedMs}。
+         *
+         * @param elapsedMs        传输 {@code bytesTransferred} 所用的时间，以毫秒为单位。
+         *                         这最多是自上次回调以来经过的时间，但如果存在未传输数据的时间段，则可能会更少。
+         * @param bytesTransferred 自上次回调以来传输的字节数。
+         * @param bitrateEstimate  以比特/秒为单位的预测码率。
+         */
         void onBandwidthSample(int elapsedMs, long bytesTransferred, long bitrateEstimate);
         
         /**
          * Event dispatcher which allows listener registration.
          */
+        /*
+        * 允许注册的事件调度器，奇奇怪怪的设计。。。。
+        * */
         final class EventDispatcher {
             
             private final CopyOnWriteArrayList<HandlerAndListener> listeners;
@@ -118,6 +134,9 @@ public interface BandwidthMeter {
     /**
      * Returns the estimated bitrate.
      */
+    /*
+    * 返回预测码率
+    * */
     long getBitrateEstimate();
     
     /**

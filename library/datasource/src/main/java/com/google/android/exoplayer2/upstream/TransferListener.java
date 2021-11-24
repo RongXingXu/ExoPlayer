@@ -35,6 +35,25 @@ package com.google.android.exoplayer2.upstream;
  *       DataSpec, boolean)}.
  * </ol>
  */
+/**
+ *
+ * 数据传输事件的监听器
+ *
+ * <ol>
+ *   <li>Initializing the underlying resource (e.g. opening a HTTP connection). {@link
+ *       #onTransferInitializing(DataSource, DataSpec, boolean)} is called before the initialization
+ *       starts.
+ *   <li>Starting the transfer after successfully initializing the resource. {@link
+ *       #onTransferStart(DataSource, DataSpec, boolean)} is called. Note that this only happens if
+ *       the initialization was successful.
+ *   <li>Transferring data. {@link #onBytesTransferred(DataSource, DataSpec, boolean, int)} is
+ *       called frequently during the transfer to indicate progress.
+ *   <li>Closing the transfer and the underlying resource. {@link #onTransferEnd(DataSource,
+ *       DataSpec, boolean)} is called. Note that each {@link #onTransferStart(DataSource, DataSpec,
+ *       boolean)} will have exactly one corresponding call to {@link #onTransferEnd(DataSource,
+ *       DataSpec, boolean)}.
+ * </ol>
+ */
 public interface TransferListener {
     
     /**

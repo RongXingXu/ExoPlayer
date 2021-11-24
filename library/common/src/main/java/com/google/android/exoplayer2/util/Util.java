@@ -107,6 +107,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  * Miscellaneous utility methods.
  */
 public final class Util {
+    private static final String TAG = "Util";
     
     /**
      * Like {@link android.os.Build.VERSION#SDK_INT}, but in a place where it can be conveniently
@@ -143,7 +144,6 @@ public final class Util {
      */
     public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
     
-    private static final String TAG = "Util";
     private static final Pattern XS_DATE_TIME_PATTERN =
             Pattern.compile(
                     "(\\d\\d\\d\\d)\\-(\\d\\d)\\-(\\d\\d)[Tt]"
@@ -2204,7 +2204,9 @@ public final class Util {
                 }
             }
         }
-        return Ascii.toUpperCase(Locale.getDefault().getCountry());
+        String countryCode = Ascii.toUpperCase(Locale.getDefault().getCountry());
+        Log.d(TAG, "[getCountryCode] " + countryCode);
+        return countryCode;
     }
     
     /**

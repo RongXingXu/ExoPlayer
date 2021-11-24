@@ -17,6 +17,7 @@ package com.google.android.exoplayer2.upstream;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -42,7 +43,7 @@ import java.util.Map;
  * the {@link Builder}.
  */
 public final class DefaultBandwidthMeter implements BandwidthMeter, TransferListener {
-    
+    private static final String TAG = "DefaultBandwidthMeter";
     /**
      * Default initial Wifi bitrate estimate in bits per second.
      */
@@ -88,6 +89,9 @@ public final class DefaultBandwidthMeter implements BandwidthMeter, TransferList
     /**
      * Default maximum weight for the sliding window.
      */
+    /*
+    * 滑动窗口的默认最大权重。
+    * */
     public static final int DEFAULT_SLIDING_WINDOW_MAX_WEIGHT = 2000;
     
     /**
@@ -133,6 +137,7 @@ public final class DefaultBandwidthMeter implements BandwidthMeter, TransferList
         private final Context context;
         
         private Map<Integer, Long> initialBitrateEstimates;
+        // 滑动窗口最大权重，https://www.jianshu.com/p/88d09a6d97e9
         private int slidingWindowMaxWeight;
         private Clock clock;
         private boolean resetOnNetworkTypeChange;
@@ -382,11 +387,14 @@ public final class DefaultBandwidthMeter implements BandwidthMeter, TransferList
     @Override
     public void onTransferInitializing(DataSource source, DataSpec dataSpec, boolean isNetwork) {
         // Do nothing.
+        Log.d(TAG, "[onTransferInitializing]");
     }
     
     @Override
     public synchronized void onTransferStart(
             DataSource source, DataSpec dataSpec, boolean isNetwork) {
+        Log.d(TAG, "[onTransferStart] " +
+                "streamCount = " + streamCount);
         if (!isTransferAtFullNetworkSpeed(dataSpec, isNetwork)) {
             return;
         }
@@ -399,6 +407,8 @@ public final class DefaultBandwidthMeter implements BandwidthMeter, TransferList
     @Override
     public synchronized void onBytesTransferred(
             DataSource source, DataSpec dataSpec, boolean isNetwork, int bytesTransferred) {
+        Log.d(TAG, "[onBytesTransferred] " +
+                "bytesTransferred = " + bytesTransferred);
         if (!isTransferAtFullNetworkSpeed(dataSpec, isNetwork)) {
             return;
         }
@@ -407,6 +417,8 @@ public final class DefaultBandwidthMeter implements BandwidthMeter, TransferList
     
     @Override
     public synchronized void onTransferEnd(DataSource source, DataSpec dataSpec, boolean isNetwork) {
+        Log.d(TAG, "[onTransferEnd]" +
+                "streamCount = " + streamCount);
         if (!isTransferAtFullNetworkSpeed(dataSpec, isNetwork)) {
             return;
         }
@@ -491,6 +503,9 @@ public final class DefaultBandwidthMeter implements BandwidthMeter, TransferList
     /**
      * Returns initial bitrate group assignments for a {@code country}. The initial bitrate is a list
      * of indexes for [Wifi, 2G, 3G, 4G, 5G_NSA, 5G_SA].
+     */
+    /**
+     * 返回 {@code country} 的初始比特率组分配。 初始比特率是 [Wifi, 2G, 3G, 4G, 5G_NSA, 5G_SA] 的索引列表。
      */
     private static int[] getInitialBitrateCountryGroupAssignment(String country) {
         switch (country) {
