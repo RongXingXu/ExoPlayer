@@ -37,6 +37,9 @@ import org.checkerframework.checker.nullness.compatqual.NullableType;
 /**
  * Holds a {@link MediaPeriod} with information required to play it as part of a timeline.
  */
+/*
+* 保存一个 {@link MediaPeriod}，包含其作为timeline一部分播放所需的信息。
+* */
 /* package */
 final class MediaPeriodHolder {
     

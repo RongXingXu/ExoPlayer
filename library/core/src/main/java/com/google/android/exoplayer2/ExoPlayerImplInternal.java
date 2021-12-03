@@ -1969,6 +1969,7 @@ final class ExoPlayerImplInternal
     }
     
     private void maybeUpdateLoadingPeriod() throws ExoPlaybackException {
+        // 如果有loading的period，根据当前rendererPositionUs重新评估缓存区
         queue.reevaluateBuffer(rendererPositionUs);
         // 是否需要load下一个MediaPeriod
         if (queue.shouldLoadNextMediaPeriod()) {
@@ -1993,6 +1994,7 @@ final class ExoPlayerImplInternal
         if (shouldContinueLoading) {
             // We should still be loading, except when there is nothing to load or we have fully loaded
             // the current period.
+            // 我们应该继续加载，除非没有什么可加载的或者我们已经完全加载了当前period。
             shouldContinueLoading = isLoadingPossible();
             updateIsLoading();
         } else {
@@ -2290,23 +2292,31 @@ final class ExoPlayerImplInternal
     private void maybeContinueLoading() {
         shouldContinueLoading = shouldContinueLoading();
         if (shouldContinueLoading) {
+            // 触发继续加载
             queue.getLoadingPeriod().continueLoading(rendererPositionUs);
         }
+        // 更新 playbackInfo IsLoading 状态
         updateIsLoading();
     }
     
     private boolean shouldContinueLoading() {
+        // 根据当前 period 状态判断是否需要继续加载
         if (!isLoadingPossible()) {
             return false;
         }
         MediaPeriodHolder loadingPeriodHolder = queue.getLoadingPeriod();
+        // 获取总已缓冲的媒体duration
         long bufferedDurationUs =
                 getTotalBufferedDurationUs(loadingPeriodHolder.getNextLoadPositionUs());
+        // 获取当前播放位置；
+        // 1、如果，loading和playing是一个实例，直接通过rendererPositionUs - 偏移量；
+        // 2、否则，rendererPositionUs - loading 偏移量 - loading start位置，为负值
         long playbackPositionUs =
                 loadingPeriodHolder == queue.getPlayingPeriod()
                         ? loadingPeriodHolder.toPeriodTime(rendererPositionUs)
                         : loadingPeriodHolder.toPeriodTime(rendererPositionUs)
                         - loadingPeriodHolder.info.startPositionUs;
+        // loadControl判断是否需要继续加载
         return loadControl.shouldContinueLoading(
                 playbackPositionUs, bufferedDurationUs, mediaClock.getPlaybackParameters().speed);
     }
@@ -2314,19 +2324,23 @@ final class ExoPlayerImplInternal
     private boolean isLoadingPossible() {
         MediaPeriodHolder loadingPeriodHolder = queue.getLoadingPeriod();
         if (loadingPeriodHolder == null) {
+            // 需要loading的 Period 为空，说明没有要加载的 Period 。直接返回false，不需要继续loading
             return false;
         }
         long nextLoadPositionUs = loadingPeriodHolder.getNextLoadPositionUs();
         if (nextLoadPositionUs == C.TIME_END_OF_SOURCE) {
+            // 下一需要加载的position为C.TIME_END_OF_SOURCE，说明已经到头了 。直接返回false，不需要继续loading
             return false;
         }
         return true;
     }
     
+    // 更新 playbackInfo isLoading 状态
     private void updateIsLoading() {
         MediaPeriodHolder loadingPeriod = queue.getLoadingPeriod();
         boolean isLoading =
                 shouldContinueLoading || (loadingPeriod != null && loadingPeriod.mediaPeriod.isLoading());
+        // playbackInfo isLoading 状态矫正
         if (isLoading != playbackInfo.isLoading) {
             playbackInfo = playbackInfo.copyWithIsLoading(isLoading);
         }

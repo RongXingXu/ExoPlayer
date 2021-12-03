@@ -271,6 +271,16 @@ public interface MediaPeriod extends SequenceableLoader {
      *                   not yet started, the value will be the starting position in this period minus the duration
      *                   of any media in previous periods still to be played.
      */
+    /**
+     * 重新评估给定播放位置的缓冲区。
+     *
+     * <p>这个方法只能在period prepared之后调用
+     *
+     * <p>一个period可以选择丢弃已缓冲的media或者取消正在记载的数据以便于用不同的quality重新缓冲
+     *
+     * @param positionUs 当前播放位位置（微秒）。如果当前period的播放还没有开始，该值将会是当前period的起始位置减去前一时间段仍要播放的任何媒体的持续时间。
+     *
+     */
     @Override
     void reevaluateBuffer(long positionUs);
 }
