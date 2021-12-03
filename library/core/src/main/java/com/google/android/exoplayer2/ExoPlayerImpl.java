@@ -374,7 +374,9 @@ final class ExoPlayerImpl extends BasePlayer {
         if (playbackInfo.playbackState != Player.STATE_IDLE) {
             return;
         }
+        // 重置PlaybackInfo中的 error信息
         PlaybackInfo playbackInfo = this.playbackInfo.copyWithPlaybackError(null);
+        // 更新 playbackInfo 的播放状态 （timeline为空End or Buffering）
         playbackInfo =
                 playbackInfo.copyWithPlaybackState(
                         playbackInfo.timeline.isEmpty() ? Player.STATE_ENDED : Player.STATE_BUFFERING);
@@ -384,6 +386,7 @@ final class ExoPlayerImpl extends BasePlayer {
         // because it uses a callback.
         pendingOperationAcks++;
         internalPlayer.prepare();
+        // 更新播放器的 playbackInfo
         updatePlaybackInfo(
                 playbackInfo,
                 /* ignored */ TIMELINE_CHANGE_REASON_SOURCE_UPDATE,
@@ -593,9 +596,15 @@ final class ExoPlayerImpl extends BasePlayer {
             return;
         }
         pendingOperationAcks++;
+        
+        // 根据 playWhenReady 和 playbackSuppressionReason构建一个新的playbackInfo
         PlaybackInfo playbackInfo =
                 this.playbackInfo.copyWithPlayWhenReady(playWhenReady, playbackSuppressionReason);
+        
+        // 更新播放器playWhenReady 参数
         internalPlayer.setPlayWhenReady(playWhenReady, playbackSuppressionReason);
+        
+        // 更新当前播放器的playbackInfo
         updatePlaybackInfo(
                 playbackInfo,
                 /* ignored */ TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED,
@@ -1293,6 +1302,7 @@ final class ExoPlayerImpl extends BasePlayer {
         
         // Assign playback info immediately such that all getters return the right values, but keep
         // snapshot of previous and new state so that listener invocations are triggered correctly.
+        // 立即分配播放信息，以便所有 getter 返回正确的值，但保留以前和新状态的快照，以便正确触发侦听器调用。
         PlaybackInfo previousPlaybackInfo = this.playbackInfo;
         PlaybackInfo newPlaybackInfo = playbackInfo;
         this.playbackInfo = playbackInfo;

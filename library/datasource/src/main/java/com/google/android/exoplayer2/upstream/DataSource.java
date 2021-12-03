@@ -29,6 +29,9 @@ import java.util.Map;
 /**
  * Reads data from URI-identified resources.
  */
+/*
+* 从 URI 标识的资源中读取数据。
+* */
 public interface DataSource extends DataReader {
     
     /**

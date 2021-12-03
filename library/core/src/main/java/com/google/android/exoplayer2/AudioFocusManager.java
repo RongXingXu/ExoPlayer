@@ -41,6 +41,12 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 /**
  * Manages requesting and responding to changes in audio focus.
  */
+/*
+* 管理音频焦点的变化的请求和响应。
+* 学习链接：
+* 1、https://www.jianshu.com/p/4dd0febdcd5c
+* 2、https://juejin.cn/post/6844903513181388807
+* */
 /* package */
 final class AudioFocusManager {
     
@@ -116,18 +122,30 @@ final class AudioFocusManager {
     /**
      * No audio focus is currently being held.
      */
+    /*
+    * 当前没有保持音频焦点。
+    * */
     private static final int AUDIO_FOCUS_STATE_NO_FOCUS = 0;
     /**
      * The requested audio focus is currently held.
      */
+    /*
+    * 当前保持请求的音频焦点。
+    * */
     private static final int AUDIO_FOCUS_STATE_HAVE_FOCUS = 1;
     /**
      * Audio focus has been temporarily lost.
      */
+    /*
+    * 音频焦点短暂丢失
+    * */
     private static final int AUDIO_FOCUS_STATE_LOSS_TRANSIENT = 2;
     /**
      * Audio focus has been temporarily lost, but playback may continue with reduced volume.
      */
+    /*
+    * 音频焦点暂时丢失，但播放可能减少音量继续播放
+    * */
     private static final int AUDIO_FOCUS_STATE_LOSS_TRANSIENT_DUCK = 3;
     
     private static final String TAG = "AudioFocusManager";
@@ -200,12 +218,22 @@ final class AudioFocusManager {
      * @param playbackState The desired playback state.
      * @return A {@link PlayerCommand} to execute on the player.
      */
+    /**
+     * 播放器调用，根据期望的播放状态，用来决策请求或者去掉音频焦点
+     *
+     * @param playWhenReady 期望值
+     * @param playbackState 期望播放状态
+     * @return A {@link PlayerCommand} to execute on the player.
+     */
     @PlayerCommand
     public int updateAudioFocus(boolean playWhenReady, @Player.State int playbackState) {
+        // 判断是否需要释放焦点 播放状态IDLE or focusGainToRequest != C.AUDIOFOCUS_GAIN
         if (shouldAbandonAudioFocusIfHeld(playbackState)) {
+            // 释放音频焦点，如果持有
             abandonAudioFocusIfHeld();
             return playWhenReady ? PLAYER_COMMAND_PLAY_WHEN_READY : PLAYER_COMMAND_DO_NOT_PLAY;
         }
+        // 请求音频焦点，如果期望playWhenReady为true
         return playWhenReady ? requestAudioFocus() : PLAYER_COMMAND_DO_NOT_PLAY;
     }
     
@@ -225,6 +253,7 @@ final class AudioFocusManager {
         return focusListener;
     }
     
+    // 判断是否需要释放音频焦点，如果持有的话，focusGainToRequest根据convertAudioAttributesToFocusGain转化来，默认是AUDIOFOCUS_GAIN，因为是Media资源
     private boolean shouldAbandonAudioFocusIfHeld(@Player.State int playbackState) {
         return playbackState == Player.STATE_IDLE || focusGainToRequest != C.AUDIOFOCUS_GAIN;
     }
@@ -245,14 +274,17 @@ final class AudioFocusManager {
     }
     
     private void abandonAudioFocusIfHeld() {
+        // 当前状态本来就没有持有音频焦点直接return
         if (audioFocusState == AUDIO_FOCUS_STATE_NO_FOCUS) {
             return;
         }
+        // 释放音频焦点
         if (Util.SDK_INT >= 26) {
             abandonAudioFocusV26();
         } else {
             abandonAudioFocusDefault();
         }
+        // 更新audioFocusState
         setAudioFocusState(AUDIO_FOCUS_STATE_NO_FOCUS);
     }
     
@@ -307,6 +339,11 @@ final class AudioFocusManager {
      * @param audioAttributes The audio attributes associated with this focus request.
      * @return The type of audio focus gain that should be requested.
      */
+    /*
+    * 将 {@link AudioAttributes} 转换为音频焦点请求之一。
+    *
+    * <p> 遵循javadoc文档
+    * */
     @C.AudioFocusGain
     private static int convertAudioAttributesToFocusGain(@Nullable AudioAttributes audioAttributes) {
         if (audioAttributes == null) {
@@ -399,15 +436,19 @@ final class AudioFocusManager {
     
     private void handlePlatformAudioFocusChange(int focusChange) {
         switch (focusChange) {
+            // 获得音频焦点
             case AudioManager.AUDIOFOCUS_GAIN:
                 setAudioFocusState(AUDIO_FOCUS_STATE_HAVE_FOCUS);
                 executePlayerCommand(PLAYER_COMMAND_PLAY_WHEN_READY);
                 return;
+            // 丢失音频焦点
             case AudioManager.AUDIOFOCUS_LOSS:
                 executePlayerCommand(PLAYER_COMMAND_DO_NOT_PLAY);
                 abandonAudioFocusIfHeld();
                 return;
+            // 音频焦点临时丢失，不久会再回来，必须终止所有的音频播放，但是保留你的播放资源
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+            // 音频焦点临时丢失，不久会再回来，允许你安静的播放音频（低音量），而不是完全的终止音频播放。
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                 if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || willPauseWhenDucked()) {
                     executePlayerCommand(PLAYER_COMMAND_WAIT_FOR_CALLBACK);

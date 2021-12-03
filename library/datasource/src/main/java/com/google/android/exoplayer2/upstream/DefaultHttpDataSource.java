@@ -372,8 +372,10 @@ public class DefaultHttpDataSource extends BaseDataSource implements HttpDataSou
         String responseMessage;
         HttpURLConnection connection;
         try {
+            // 建立请求链接
             this.connection = makeConnection(dataSpec);
             connection = this.connection;
+            // 获取请求返回码
             responseCode = connection.getResponseCode();
             responseMessage = connection.getResponseMessage();
         } catch (IOException e) {

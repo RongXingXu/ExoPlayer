@@ -645,15 +645,24 @@ public final class C {
     /**
      * @see AudioManager#AUDIOFOCUS_GAIN_TRANSIENT
      */
+    /*
+    * 表示申请一个短暂的音频焦点，并且马上就会被释放，此时希望上一个持有音频焦点的App暂停播放。例如播放一个提醒声音。
+    * */
     public static final int AUDIOFOCUS_GAIN_TRANSIENT = AudioManager.AUDIOFOCUS_GAIN_TRANSIENT;
     /**
      * @see AudioManager#AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
      */
+    /*
+    * 效果同AUDIOFOCUS_GAIN_TRANSIENT，只是希望上一个持有焦点的App减小其播放声音(但仍可以播放)，此时会混音播放。例如导航播报。
+    * */
     public static final int AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK =
             AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK;
     /**
      * @see AudioManager#AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
      */
+    /*
+    * 表示申请一个短暂的音频焦点，并且会希望系统不要播放任何突然的声音（例如通知，提醒等），例如用户在录音。
+    * */
     public static final int AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE =
             AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE;
     

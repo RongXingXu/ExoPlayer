@@ -1127,8 +1127,10 @@ public class SimpleExoPlayer extends BasePlayer
         verifyApplicationThread();
         
         boolean playWhenReady = getPlayWhenReady();
+        // 更新音频焦点
         @AudioFocusManager.PlayerCommand
         int playerCommand = audioFocusManager.updateAudioFocus(playWhenReady, Player.STATE_BUFFERING);
+        
         updatePlayWhenReady(
                 playWhenReady, playerCommand, getPlayWhenReadyChangeReason(playWhenReady, playerCommand));
         player.prepare();
@@ -1256,8 +1258,10 @@ public class SimpleExoPlayer extends BasePlayer
     @Override
     public void setPlayWhenReady(boolean playWhenReady) {
         verifyApplicationThread();
+        // 更新音频焦点
         @AudioFocusManager.PlayerCommand
         int playerCommand = audioFocusManager.updateAudioFocus(playWhenReady, getPlaybackState());
+        // 跟新playWhenReady状态
         updatePlayWhenReady(
                 playWhenReady, playerCommand, getPlayWhenReadyChangeReason(playWhenReady, playerCommand));
     }
@@ -1753,6 +1757,8 @@ public class SimpleExoPlayer extends BasePlayer
             @AudioFocusManager.PlayerCommand int playerCommand,
             @Player.PlayWhenReadyChangeReason int playWhenReadyChangeReason) {
         playWhenReady = playWhenReady && playerCommand != AudioFocusManager.PLAYER_COMMAND_DO_NOT_PLAY;
+        
+        // playWhenReady 为true ，且音频播放Command 不是ready就播放 ，表示抑制播放的原因使音频焦点丢失
         @PlaybackSuppressionReason
         int playbackSuppressionReason =
                 playWhenReady && playerCommand != AudioFocusManager.PLAYER_COMMAND_PLAY_WHEN_READY

@@ -1246,10 +1246,16 @@ public interface Player {
     /**
      * Playback has been started or paused by a call to {@link #setPlayWhenReady(boolean)}.
      */
+    /*
+    * 通过调用{@link #setPlayWhenReady(boolean)} 使播放暂停 or 开始
+    * */
     int PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST = 1;
     /**
      * Playback has been paused because of a loss of audio focus.
      */
+    /*
+    * 音频焦点丢失导致播放暂停
+    * */
     int PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS = 2;
     /**
      * Playback has been paused to avoid becoming noisy.

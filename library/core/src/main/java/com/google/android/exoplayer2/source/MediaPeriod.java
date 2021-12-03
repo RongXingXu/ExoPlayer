@@ -176,6 +176,15 @@ public interface MediaPeriod extends SequenceableLoader {
      * @return If a discontinuity was read then the playback position in microseconds after the
      * discontinuity. Else {@link C#TIME_UNSET}.
      */
+    /*
+    * 尝试读取中断。
+    *
+    * <p> 此方法返回的值不是 {@link C#TIME_UNSET} 后，周期提供的所有 {@link SampleStream} 都保证从关键帧开始。
+    *
+    * <p> 此方法仅在 period prepared之后，或者读取任何 period 提供的 {@link SampleStream}之前调用。
+    *
+    * @return 如果读取了不连续性，则返回在不连续性之后以微秒为单位的播放位置。否则 {@link C#TIME_UNSET}。
+    * */
     long readDiscontinuity();
     
     /**

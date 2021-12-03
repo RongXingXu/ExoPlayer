@@ -35,7 +35,9 @@ import java.util.Comparator;
 public class SlidingPercentile {
     
     // Orderings.
+    // index 排序器
     private static final Comparator<Sample> INDEX_COMPARATOR = (a, b) -> a.index - b.index;
+    // value 排序器
     private static final Comparator<Sample> VALUE_COMPARATOR =
             (a, b) -> Float.compare(a.value, b.value);
     
@@ -81,7 +83,11 @@ public class SlidingPercentile {
      * @param weight The weight of the new observation.
      * @param value  The value of the new observation.
      */
+    /*
+    * add 一个新的权重值
+    * */
     public void addSample(int weight, float value) {
+        // samples 按 index 排序
         ensureSortedByIndex();
         
         Sample newSample =
@@ -90,14 +96,19 @@ public class SlidingPercentile {
         newSample.weight = weight;
         newSample.value = value;
         samples.add(newSample);
+        
+        // 计算总权重
         totalWeight += weight;
         
+        // 总权重超过最大权重情况下做调整，多出来的权重通过削减列表前面sample的权重来均衡，始终保证totalWeight < maxWeight
+        // 削减方式如下：maxWeight = 100,sample列表权重如{1:20,2:30,3:20,4:10,5:50},其中50为新增sample，多出来的权重为 sum - maxWeight = 30，最后处理结果为{2:20,3:20,4:10,5:50}
         while (totalWeight > maxWeight) {
             int excessWeight = totalWeight - maxWeight;
             Sample oldestSample = samples.get(0);
             if (oldestSample.weight <= excessWeight) {
                 totalWeight -= oldestSample.weight;
                 samples.remove(0);
+                // 尝试放到sample复用池
                 if (recycledSampleCount < MAX_RECYCLED_SAMPLES) {
                     recycledSamples[recycledSampleCount++] = oldestSample;
                 }
@@ -132,6 +143,9 @@ public class SlidingPercentile {
     /**
      * Sorts the samples by index.
      */
+    /**
+     * 将sample按index排序
+     */
     private void ensureSortedByIndex() {
         if (currentSortOrder != SORT_ORDER_BY_INDEX) {
             Collections.sort(samples, INDEX_COMPARATOR);
@@ -142,6 +156,9 @@ public class SlidingPercentile {
     /**
      * Sorts the samples by value.
      */
+    /**
+     * 将sample按value排序
+     */
     private void ensureSortedByValue() {
         if (currentSortOrder != SORT_ORDER_BY_VALUE) {
             Collections.sort(samples, VALUE_COMPARATOR);
@@ -149,8 +166,8 @@ public class SlidingPercentile {
         }
     }
     
+    
     private static class Sample {
-        
         public int index;
         public int weight;
         public float value;

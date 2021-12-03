@@ -37,7 +37,8 @@ import com.google.common.collect.ImmutableList;
  * loading media period at the end of the queue, with methods for controlling loading and updating
  * the queue. Also has a reference to the media period currently being read.
  */
-/* package */ final class MediaPeriodQueue {
+/* package */
+final class MediaPeriodQueue {
     
     /**
      * Initial renderer position offset used for the first item in the queue, in microseconds.

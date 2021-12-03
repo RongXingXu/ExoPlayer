@@ -34,6 +34,9 @@ import java.util.Map;
 /**
  * Defines a region of data in a resource.
  */
+/**
+ * 定义一个resource中数据的区域
+ */
 public final class DataSpec {
     
     static {
@@ -267,9 +270,21 @@ public final class DataSpec {
      * DataSource#open(DataSpec)} will typically be {@link C#LENGTH_UNSET}. The data read from {@link
      * DataSource#read(byte[], int, int)} will be the decompressed data.
      */
+    /**
+     * 允许底层网络堆栈请求服务器使用 gzip 压缩。
+     *
+     * <p>如果请求的数据已经被压缩（例如大多数音频和视频请求），通常不应设置。可以在请求其他数据时设置。
+     *
+     * <p>当使用{@link DataSource}请求设置了这个标志的数据时，如果{@link DataSource}确实发起了网络请求，
+     * 那么从{@link DataSource#open(DataSpec)}返回的值通常为 {@link C#LENGTH_UNSET}。
+     * 从 {@link DataSource#read(byte[], int, int)} 读取的数据将是解压后的数据。
+     */
     public static final int FLAG_ALLOW_GZIP = 1;
     /**
      * Prevents caching if the length cannot be resolved when the {@link DataSource} is opened.
+     */
+    /**
+     * 如果在打开 {@link DataSource} 时无法解析长度，则防止缓存。
      */
     public static final int FLAG_DONT_CACHE_IF_LENGTH_UNKNOWN = 1 << 1;
     /**
@@ -277,6 +292,10 @@ public final class DataSpec {
      * will be able to evict individual fragments of the data. Depending on the cache implementation,
      * setting this flag may also enable more concurrent access to the data (e.g. reading one fragment
      * whilst writing another).
+     */
+    /**
+     * 允许将此请求分割为多个缓存文件，这意味着缓存驱逐策略将能够驱逐数据的单个片段。
+     * 根据缓存实现，设置此标志还可以启用对数据的更多并发访问（例如，在写入另一个片段的同时读取一个片段）。
      */
     public static final int FLAG_ALLOW_CACHE_FRAGMENTATION = 1 << 2;
     /**

@@ -17,20 +17,38 @@ package com.google.android.exoplayer2.util;
 
 import com.google.android.exoplayer2.PlaybackParameters;
 
-/** Tracks the progression of media time. */
+/**
+ * Tracks the progression of media time.
+ */
+/**
+ *
+ * 跟踪媒体时间进度。
+ */
 public interface MediaClock {
-
-  /** Returns the current media position in microseconds. */
-  long getPositionUs();
-
-  /**
-   * Attempts to set the playback parameters. The media clock may override the speed if changing the
-   * playback parameters is not supported.
-   *
-   * @param playbackParameters The playback parameters to attempt to set.
-   */
-  void setPlaybackParameters(PlaybackParameters playbackParameters);
-
-  /** Returns the active playback parameters. */
-  PlaybackParameters getPlaybackParameters();
+    
+    /**
+     * Returns the current media position in microseconds.
+     */
+    /**
+     * 返回当前媒体位置（微秒）
+     * */
+    long getPositionUs();
+    
+    /**
+     * Attempts to set the playback parameters. The media clock may override the speed if changing the
+     * playback parameters is not supported.
+     *
+     * @param playbackParameters The playback parameters to attempt to set.
+     */
+    /**
+     * 尝试设置播放参数。如果不支持更改播放参数，媒体时钟可能会覆盖速度。
+     *
+     * @param playbackParameters 期望设置的播放参数
+     */
+    void setPlaybackParameters(PlaybackParameters playbackParameters);
+    
+    /**
+     * Returns the active playback parameters.
+     */
+    PlaybackParameters getPlaybackParameters();
 }

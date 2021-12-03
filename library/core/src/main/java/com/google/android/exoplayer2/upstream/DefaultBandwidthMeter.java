@@ -135,7 +135,7 @@ public final class DefaultBandwidthMeter implements BandwidthMeter, TransferList
         
         @Nullable
         private final Context context;
-        
+        // 初始带宽预测
         private Map<Integer, Long> initialBitrateEstimates;
         // 滑动窗口最大权重，https://www.jianshu.com/p/88d09a6d97e9
         private int slidingWindowMaxWeight;
@@ -160,6 +160,12 @@ public final class DefaultBandwidthMeter implements BandwidthMeter, TransferList
          * Sets the maximum weight for the sliding window.
          *
          * @param slidingWindowMaxWeight The maximum weight for the sliding window.
+         * @return This builder.
+         */
+        /**
+         * 设置滑动窗口的最大权重，默认是 {@link DEFAULT_SLIDING_WINDOW_MAX_WEIGHT} 2000
+         *
+         * @param slidingWindowMaxWeight 滑动窗口的最大权重
          * @return This builder.
          */
         public Builder setSlidingWindowMaxWeight(int slidingWindowMaxWeight) {

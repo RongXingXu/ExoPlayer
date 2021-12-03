@@ -956,14 +956,17 @@ final class ExoPlayerImplInternal
     
     private void doSomeWork() throws ExoPlaybackException, IOException {
         long operationStartTimeMs = clock.uptimeMillis();
+        // 更新数据
         updatePeriods();
         
+        // 检查状态IDLE和END状态直接清空消息队列，并return
         if (playbackInfo.playbackState == Player.STATE_IDLE
                 || playbackInfo.playbackState == Player.STATE_ENDED) {
             // Remove all messages. Prepare (in case of IDLE) or seek (in case of ENDED) will resume.
             handler.removeMessages(MSG_DO_SOME_WORK);
             return;
         }
+        
         
         @Nullable MediaPeriodHolder playingPeriodHolder = queue.getPlayingPeriod();
         if (playingPeriodHolder == null) {
@@ -1029,9 +1032,12 @@ final class ExoPlayerImplInternal
             stopRenderers();
         } else if (playbackInfo.playbackState == Player.STATE_BUFFERING
                 && shouldTransitionToReadyState(renderersAllowPlayback)) {
+            // 当前使buffering状态，且满足STATE_BUFFERING 转STATE_READY条件则走进来
+            // 设置播放状态为STATE_READY
             setState(Player.STATE_READY);
             pendingRecoverableRendererError = null; // Any pending error was successfully recovered from.
             if (shouldPlayWhenReady()) {
+                // 开始渲染
                 startRenderers();
             }
         } else if (playbackInfo.playbackState == Player.STATE_READY
@@ -1955,6 +1961,7 @@ final class ExoPlayerImplInternal
             // No periods available.
             return;
         }
+        // 可能需要loading
         maybeUpdateLoadingPeriod();
         maybeUpdateReadingPeriod();
         maybeUpdateReadingRenderers();
@@ -1963,6 +1970,7 @@ final class ExoPlayerImplInternal
     
     private void maybeUpdateLoadingPeriod() throws ExoPlaybackException {
         queue.reevaluateBuffer(rendererPositionUs);
+        // 是否需要load下一个MediaPeriod
         if (queue.shouldLoadNextMediaPeriod()) {
             @Nullable
             MediaPeriodInfo info = queue.getNextMediaPeriodInfo(rendererPositionUs, playbackInfo);

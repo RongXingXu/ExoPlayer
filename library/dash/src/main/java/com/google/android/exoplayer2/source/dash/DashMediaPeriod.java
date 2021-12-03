@@ -74,7 +74,8 @@ import org.checkerframework.checker.nullness.compatqual.NullableType;
 /**
  * A DASH {@link MediaPeriod}.
  */
-/* package */ final class DashMediaPeriod
+/* package */
+final class DashMediaPeriod
         implements MediaPeriod,
         SequenceableLoader.Callback<ChunkSampleStream<DashChunkSource>>,
         ChunkSampleStream.ReleaseCallback<DashChunkSource> {
