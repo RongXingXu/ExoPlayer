@@ -26,6 +26,9 @@ import org.checkerframework.checker.nullness.compatqual.NullableType;
 /**
  * The result of a {@link TrackSelector} operation.
  */
+/*
+* {@link TrackSelector} 操作的结果。
+* */
 public final class TrackSelectorResult {
     
     /**

@@ -649,6 +649,14 @@ final class MediaPeriodQueue {
      * @return The following media period's info, or {@code null} if it is not yet possible to get the
      * next media period info.
      */
+    /**
+     * 返回 {@code mediaPeriodHolder} media period 之后的 media period 的 {@link MediaPeriodInfo}。
+     *
+     * @param timeline           当前timeline.
+     * @param mediaPeriodHolder  The media period holder.
+     * @param rendererPositionUs 当前 renderer position（微秒）
+     * @return 下一个media period的信息，或者如果尚无法获得下一个媒体期信息返回{@code null} 。
+     */
     @Nullable
     private MediaPeriodInfo getFollowingMediaPeriodInfo(
             Timeline timeline, MediaPeriodHolder mediaPeriodHolder, long rendererPositionUs) {
@@ -656,27 +664,40 @@ final class MediaPeriodQueue {
         // but if the timeline is not ready to provide the next period it can't return a non-null value
         // until the timeline is updated. Store whether the next timeline period is ready when the
         // timeline is updated, to avoid repeatedly checking the same timeline.
+        // TODO: 这个方法会被ExoPlayerImplInternal.maybeUpdateLoadingPeriod重复调用，
+        //  但是如果 timeline 还没有准备好提供下一个 period ，它就不能返回非空值，直到时间线更新。
+        //  更新timeline时存储下一个timeline period 是否准备好，避免重复检查同一时间线。
+        
+        // 获取当前 mediaPeriodHolder 的 mediaPeriodInfo
         MediaPeriodInfo mediaPeriodInfo = mediaPeriodHolder.info;
         // The expected delay until playback transitions to the new period is equal the duration of
         // media that's currently buffered (assuming no interruptions). This is used to project forward
         // the start position for transitions to new windows.
+        // 获取当前 peroid 已缓冲的 buffer duration，PS：只有当前 period 缓冲完了，才能缓冲下一个
         long bufferedDurationUs =
                 mediaPeriodHolder.getRendererOffset() + mediaPeriodInfo.durationUs - rendererPositionUs;
+        // 是否是 timeline 最后一个 period （？？？？既然是最后一个，为啥还会有后面的逻辑？）
         if (mediaPeriodInfo.isLastInTimelinePeriod) {
+            // 获取当前 period index
             int currentPeriodIndex = timeline.getIndexOfPeriod(mediaPeriodInfo.id.periodUid);
+            // 获取下一个 period index
             int nextPeriodIndex =
                     timeline.getNextPeriodIndex(
                             currentPeriodIndex, period, window, repeatMode, shuffleModeEnabled);
             if (nextPeriodIndex == C.INDEX_UNSET) {
                 // We can't create a next period yet.
+                // 无后续，直接返回null
                 return null;
             }
             
             long startPositionUs;
             long contentPositionUs;
+            // 又来一填充 period，没有并发问题吗？😳，到现在没明白成员变量period的意义是啥
             int nextWindowIndex =
                     timeline.getPeriod(nextPeriodIndex, period, /* setIds= */ true).windowIndex;
+            // 获取下一个 period uid
             Object nextPeriodUid = period.uid;
+            // 获取当前 media period所属的缓冲窗口序列中的窗口序列号。
             long windowSequenceNumber = mediaPeriodInfo.id.windowSequenceNumber;
             if (timeline.getWindow(nextWindowIndex, window).firstPeriodIndex == nextPeriodIndex) {
                 // We're starting to buffer a new window. When playback transitions to this window we'll
@@ -849,18 +870,28 @@ final class MediaPeriodQueue {
             long startPositionUs,
             long requestedContentPositionUs,
             long windowSequenceNumber) {
+        // 使用具有指定唯一标识符{periodUid}的period的数据填充 {@link Period}。
         timeline.getPeriodByUid(periodUid, period);
+        // 获取 startPositionUs 之后有应播放广告的下一个广告组的索引。 如果没有此类广告组，则返回 {@link C#INDEX_UNSET}。
         int nextAdGroupIndex = period.getAdGroupIndexAfterPositionUs(startPositionUs);
+        // 创建 MediaPeriodId
         MediaPeriodId id = new MediaPeriodId(periodUid, windowSequenceNumber, nextAdGroupIndex);
+        // 是否是最后一个Period，不含广告的视频播放都为true。
+        // 这里容易让人误解当前Period是否为最后一个，
+        // 其实应理解是否是广告，是否下一个peroid是否为广告
         boolean isLastInPeriod = isLastInPeriod(id);
+        // 该period是否是所属window中最后一个Period
         boolean isLastInWindow = isLastInWindow(timeline, id);
+        // 该period是否是所属 timeline 中最后一个Period
         boolean isLastInTimeline = isLastInTimeline(timeline, id, isLastInPeriod);
         boolean isFollowedByTransitionToSameStream =
                 nextAdGroupIndex != C.INDEX_UNSET && period.isServerSideInsertedAdGroup(nextAdGroupIndex);
+        // 和广告挂钩如果有广告则为视频被剪裁播放广告组的位置，如果为后贴广告则为 C.TIME_END_OF_SOURCE
         long endPositionUs =
                 nextAdGroupIndex != C.INDEX_UNSET
                         ? period.getAdGroupTimeUs(nextAdGroupIndex)
                         : C.TIME_UNSET;
+        // 视频时长，非广告情况家就是period.durationUs
         long durationUs =
                 endPositionUs == C.TIME_UNSET || endPositionUs == C.TIME_END_OF_SOURCE
                         ? period.durationUs

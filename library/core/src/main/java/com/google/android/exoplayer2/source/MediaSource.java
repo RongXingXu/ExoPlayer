@@ -73,6 +73,12 @@ public interface MediaSource {
      * <p>Extends for backward-compatibility {@link
      * com.google.android.exoplayer2.source.MediaPeriodId}.
      */
+    /**
+     * {@link MediaPeriod} 的标识符。
+     *
+     * <p>扩展向后兼容 {@link
+     * com.google.android.exoplayer2.source.MediaPeriodId}.
+     */
     final class MediaPeriodId extends com.google.android.exoplayer2.source.MediaPeriodId {
         
         /**

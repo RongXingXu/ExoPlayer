@@ -1973,9 +1973,11 @@ final class ExoPlayerImplInternal
         queue.reevaluateBuffer(rendererPositionUs);
         // 是否需要load下一个MediaPeriod
         if (queue.shouldLoadNextMediaPeriod()) {
+            // 获取下一个将要loading的 MediaPeriodInfo
             @Nullable
             MediaPeriodInfo info = queue.getNextMediaPeriodInfo(rendererPositionUs, playbackInfo);
             if (info != null) {
+                // 入队列
                 MediaPeriodHolder mediaPeriodHolder =
                         queue.enqueueNextMediaPeriodHolder(
                                 rendererCapabilities,
@@ -1984,10 +1986,13 @@ final class ExoPlayerImplInternal
                                 mediaSourceList,
                                 info,
                                 emptyTrackSelectorResult);
+                // media period prepare
                 mediaPeriodHolder.mediaPeriod.prepare(this, info.startPositionUs);
+                // 如果队列中 playing的 period 和 入队列的 是同一个，reset Renderer Position 到起始位置
                 if (queue.getPlayingPeriod() == mediaPeriodHolder) {
                     resetRendererPosition(info.startPositionUs);
                 }
+                
                 handleLoadingMediaPeriodChanged(/* loadingTrackSelectionChanged= */ false);
             }
         }
@@ -1996,8 +2001,10 @@ final class ExoPlayerImplInternal
             // the current period.
             // 我们应该继续加载，除非没有什么可加载的或者我们已经完全加载了当前period。
             shouldContinueLoading = isLoadingPossible();
+            // 更新 playbackInfo isLoading 状态
             updateIsLoading();
         } else {
+            // 尝试继续loading
             maybeContinueLoading();
         }
     }
@@ -2235,8 +2242,10 @@ final class ExoPlayerImplInternal
                 loadingPeriodHolder.getTrackGroups(), loadingPeriodHolder.getTrackSelectorResult());
         if (loadingPeriodHolder == queue.getPlayingPeriod()) {
             // This is the first prepared period, so update the position and the renderers.
+            // 第一个 prepared period ，更新 position 和 renderers
             resetRendererPosition(loadingPeriodHolder.info.startPositionUs);
             enableRenderers();
+            
             playbackInfo =
                     handlePositionDiscontinuity(
                             playbackInfo.periodId,
@@ -2426,12 +2435,14 @@ final class ExoPlayerImplInternal
         TrackSelectorResult trackSelectorResult = readingMediaPeriod.getTrackSelectorResult();
         // Reset all disabled renderers before enabling any new ones. This makes sure resources released
         // by the disabled renderers will be available to renderers that are being enabled.
+        // 在启用任何新渲染器之前重置所有禁用的渲染器。 这确保被禁用的渲染器释放的资源可用于正在启用的渲染器。
         for (int i = 0; i < renderers.length; i++) {
             if (!trackSelectorResult.isRendererEnabled(i) && renderersToReset.remove(renderers[i])) {
                 renderers[i].reset();
             }
         }
         // Enable the renderers.
+        // Enable 所有 renderers
         for (int i = 0; i < renderers.length; i++) {
             if (trackSelectorResult.isRendererEnabled(i)) {
                 enableRenderer(i, rendererWasEnabledFlags[i]);

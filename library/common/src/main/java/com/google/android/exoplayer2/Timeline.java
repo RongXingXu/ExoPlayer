@@ -351,6 +351,9 @@ public abstract class Timeline implements Bundleable {
         /**
          * The index of the last period that belongs to this window.
          */
+        /*
+        * 属于该window的最后一个period的索引。
+        * */
         public int lastPeriodIndex;
         
         /**
@@ -926,6 +929,13 @@ public abstract class Timeline implements Bundleable {
          * @param positionUs The period position after which to find an ad group, in microseconds.
          * @return The index of the ad group, or {@link C#INDEX_UNSET}.
          */
+        /**
+         * 返回 {@code positionUs} 之后有应播放广告的下一个广告组的索引。 如果没有此类广告组，则返回 {@link C#INDEX_UNSET}。
+         *
+         * @param positionUs The period position after which to find an ad group, in microseconds.
+         * @return The index of the ad group, or {@link C#INDEX_UNSET}.
+         */
+        
         public int getAdGroupIndexAfterPositionUs(long positionUs) {
             return adPlaybackState.getAdGroupIndexAfterPositionUs(positionUs, durationUs);
         }
@@ -1270,10 +1280,13 @@ public abstract class Timeline implements Bundleable {
         if (getWindow(windowIndex, window).lastPeriodIndex == periodIndex) {
             int nextWindowIndex = getNextWindowIndex(windowIndex, repeatMode, shuffleModeEnabled);
             if (nextWindowIndex == C.INDEX_UNSET) {
+                // 当前 period 为当前 window 最后一个 period ，且无下一个 window 时直接返回 C.INDEX_UNSET，表示该 period 就是 timeline 最后一个。
                 return C.INDEX_UNSET;
             }
+            // 返回下一个 window 第一个 period 的index
             return getWindow(nextWindowIndex, window).firstPeriodIndex;
         }
+        // 原基础上+1
         return periodIndex + 1;
     }
     
@@ -1394,6 +1407,13 @@ public abstract class Timeline implements Bundleable {
      * @param period    The {@link Period} to populate. Must not be null.
      * @return The populated {@link Period}, for convenience.
      */
+    /**
+     * 使用具有指定唯一标识符的period的数据填充 {@link Period}。
+     *
+     * @param periodUid The unique identifier of the period.
+     * @param period    The {@link Period} to populate. Must not be null.
+     * @return The populated {@link Period}, for convenience.
+     */
     public Period getPeriodByUid(Object periodUid, Period period) {
         return getPeriod(getIndexOfPeriod(periodUid), period, /* setIds= */ true);
     }
@@ -1420,6 +1440,16 @@ public abstract class Timeline implements Bundleable {
      *                    the fields are required.
      * @return The populated {@link Period}, for convenience.
      */
+    /*
+    * 使用指定索引period的数据填充 {@link Period}。
+    *
+    * @param periodIndex period 索引
+    * @param period      要填充的 {@link Period}。 不能为空。
+    * @param setIds      是否应填充 {@link Period#id} 和 {@link Period#uid}。
+    *                    如果为 false，则字段将设置为 null。 除非需要这些字段，否则
+    *                    出于效率原因，调用者应该传递 false。
+    * @return The populated {@link Period}, for convenience.
+    * */
     public abstract Period getPeriod(int periodIndex, Period period, boolean setIds);
     
     /**

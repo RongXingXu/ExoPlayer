@@ -56,6 +56,11 @@ final class PlaybackInfo {
      * <p>Note that if {@link #periodId} refers to an ad, this is the requested start position for the
      * suspended content.
      */
+    /**
+     * {@link #timeline} 中当前period请求下一个开始位置，以微秒为单位，如果请求period从其默认位置开始，则为 {@link C#TIME_UNSET}。
+     *
+     * <p>请注意，如果 {@link #periodId} 指的是广告，则这是暂停内容的请求开始位置。
+     */
     public final long requestedContentPositionUs;
     /**
      * The start position after a reported position discontinuity, in microseconds.
@@ -130,6 +135,9 @@ final class PlaybackInfo {
      * Current playback position in {@link #periodId} relative to the start of the associated period
      * in the {@link #timeline}, in microseconds.
      */
+    /*
+    * {@link #periodId} 中的当前播放位置相对于 {@link #timeline} 中相关时段的开始，以微秒为单位。
+    * */
     public volatile long positionUs;
     
     /**

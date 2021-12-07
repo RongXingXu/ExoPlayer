@@ -50,6 +50,11 @@ final class MediaPeriodInfo {
      * media period is an ad. The value {@link C#TIME_END_OF_SOURCE} indicates that a postroll ad
      * follows at the end of this content media period.
      */
+    /*
+    * media period的内容被剪裁的结束位置，用来播放后续广告组，以微秒为单位；
+    * 如果没有后续广告组或此媒体时段是广告，则为 {@link C#TIME_UNSET}。
+    * 值 {@link C#TIME_END_OF_SOURCE} 表示在此内容媒体周期结束时会出现后贴广告。
+    * */
     public final long endPositionUs;
     /**
      * The duration of the media period, like {@link #endPositionUs} but with {@link
@@ -79,6 +84,9 @@ final class MediaPeriodInfo {
      * Whether this is the last media period in the entire timeline. If true, {@link
      * #isLastInTimelinePeriod} will also be true.
      */
+    /*
+    * 这是否是整个timeline中的最后一个媒体时段。 如果为真，{@link #isLastInTimelinePeriod} 也将为真。
+    * */
     public final boolean isFinal;
     
     MediaPeriodInfo(
