@@ -47,11 +47,29 @@ import java.io.IOException;
  * ExoPlayer} Javadoc. They should not be called directly from application code. Instances can be
  * re-used, but only for one {@link ExoPlayer} instance simultaneously.
  */
+/**
+ * 给{@link ExoPlayer}提供和定义一个要播放的媒体，MediaSource有两个主要职责
+ *
+ * <ul>
+ *   <li>给播放器提供 {@link Timeline} ，定义媒体自身结构，并且当媒体结构变化时提供一个新的 timeline。
+ *       MediaSource 通过在传递给 {@link #prepareSource(MediaSourceCaller, TransferListener)}
+ *       的 {@link MediaSourceCaller} 上调用 {@link MediaSourceCaller#onSourceInfoRefreshed}
+ *       来提供这些时间线。
+ *   <li>为 timeline 的 periods 提供 {@link MediaPeriod} 实例。MediaPeriods 通过调用
+ *      {@link #createPeriod(MediaPeriodId, Allocator, long)} 获取，为播放器提供了一种加载和读取媒体的方式。
+ * </ul>
+ * <p>
+ * 所有的方法调用都在播放器的内部播放线程，就像 {@linkExoPlayer} Javadoc 描述的那样. 不允许直接在应用层代码中调用
+ * 实例可以被复用，但只能同时用于一个 {@link ExoPlayer} 实例。
+ */
 public interface MediaSource {
     
     /**
      * A caller of media sources, which will be notified of source events.
      */
+    /*
+    * media sources的调用者，用于接收源事件的通知。
+    * */
     interface MediaSourceCaller {
         
         /**
@@ -60,6 +78,14 @@ public interface MediaSource {
          * <p>Called on the playback thread.
          *
          * @param source   The {@link MediaSource} whose info has been refreshed.
+         * @param timeline The source's timeline.
+         */
+        /**
+         * 当 {@link Timeline} 更新时调用
+         *
+         * <p>播放线程调用
+         *
+         * @param source   其信息已刷新的 {@link MediaSource}。
          * @param timeline The source's timeline.
          */
         void onSourceInfoRefreshed(MediaSource source, Timeline timeline);

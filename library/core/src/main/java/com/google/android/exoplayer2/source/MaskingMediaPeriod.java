@@ -38,6 +38,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
  * you need to return a media period immediately but the media source that should create it is not
  * yet available or prepared.
  */
+/*
+*
+* */
 public final class MaskingMediaPeriod implements MediaPeriod, MediaPeriod.Callback {
     
     /**
@@ -67,6 +70,9 @@ public final class MaskingMediaPeriod implements MediaPeriod, MediaPeriod.Callba
     /**
      * The {@link MediaSource} that will create the underlying media period.
      */
+    /*
+    * 用于构建media period（未构建）的 {@link MediaSource}
+    * */
     private @MonotonicNonNull MediaSource mediaSource;
     
     private @MonotonicNonNull MediaPeriod mediaPeriod;
@@ -85,6 +91,9 @@ public final class MaskingMediaPeriod implements MediaPeriod, MediaPeriod.Callba
      * @param allocator         The allocator used to create the media period.
      * @param preparePositionUs The expected start position, in microseconds.
      */
+    /*
+    * 创建一个新的伪装 media period 。在准备开始之前，必须通过 {@link #setMediaSource(MediaSource)} 设置媒体源。
+    * */
     public MaskingMediaPeriod(MediaPeriodId id, Allocator allocator, long preparePositionUs) {
         this.id = id;
         this.allocator = allocator;

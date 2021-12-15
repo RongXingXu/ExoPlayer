@@ -17,12 +17,22 @@ package com.google.android.exoplayer2;
 
 import com.google.android.exoplayer2.source.MediaSource;
 
-/** A holder of information about a {@link MediaSource}. */
-/* package */ interface MediaSourceInfoHolder {
-
-  /** Returns the uid of the {@link MediaSourceList.MediaSourceHolder}. */
+/**
+ * A holder of information about a {@link MediaSource}.
+ */
+/*
+* 持有一个{@link MediaSource}信息的holder
+* */
+/* package */
+interface MediaSourceInfoHolder {
+  
+  /**
+   * Returns the uid of the {@link MediaSourceList.MediaSourceHolder}.
+   */
   Object getUid();
-
-  /** Returns the timeline. */
+  
+  /**
+   * Returns the timeline.
+   */
   Timeline getTimeline();
 }

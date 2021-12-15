@@ -39,6 +39,9 @@ import java.util.List;
 /**
  * Defines an immutable group of tracks identified by their format identity.
  */
+/**
+ * 定义一组由format标志标识的不可变的tracks
+ */
 public final class TrackGroup implements Bundleable {
     
     private static final String TAG = "TrackGroup";
@@ -46,6 +49,9 @@ public final class TrackGroup implements Bundleable {
     /**
      * The number of tracks in the group.
      */
+    /*
+    * group 中 tracks 的个数
+    * */
     public final int length;
     
     private final Format[] formats;

@@ -341,15 +341,20 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
     @Override
     public MediaSource createMediaSource(MediaItem mediaItem) {
         checkNotNull(mediaItem.localConfiguration);
+        
+        // 类型转换 by uri/mimeType
         @C.ContentType
         int type =
                 Util.inferContentTypeForUriAndMimeType(
                         mediaItem.localConfiguration.uri, mediaItem.localConfiguration.mimeType);
+        //通过type获取对应的 MediaSourceFactory
         @Nullable
         MediaSourceFactory mediaSourceFactory = delegateFactoryLoader.getMediaSourceFactory(type);
+        // 非空检查
         checkStateNotNull(
                 mediaSourceFactory, "No suitable media source factory found for content type: " + type);
         
+        // 直播配置
         MediaItem.LiveConfiguration.Builder liveConfigurationBuilder =
                 mediaItem.liveConfiguration.buildUpon();
         if (mediaItem.liveConfiguration.targetOffsetMs == C.TIME_UNSET) {
@@ -369,14 +374,18 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
         }
         MediaItem.LiveConfiguration liveConfiguration = liveConfigurationBuilder.build();
         // Make sure to retain the very same media item instance, if no value needs to be overridden.
+        // 如果不需要覆盖任何值，请确保保留完全相同的媒体项实例。
         if (!liveConfiguration.equals(mediaItem.liveConfiguration)) {
             mediaItem = mediaItem.buildUpon().setLiveConfiguration(liveConfiguration).build();
         }
         
+        // 通过 mediaSourceFactory 创建 MediaSource
         MediaSource mediaSource = mediaSourceFactory.createMediaSource(mediaItem);
         
+        // 字幕轨道的属性
         List<MediaItem.SubtitleConfiguration> subtitleConfigurations =
                 castNonNull(mediaItem.localConfiguration).subtitleConfigurations;
+        
         if (!subtitleConfigurations.isEmpty()) {
             MediaSource[] mediaSources = new MediaSource[subtitleConfigurations.size() + 1];
             mediaSources[0] = mediaSource;
@@ -412,14 +421,17 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
                 }
             }
             
+            // 套个羊皮
             mediaSource = new MergingMediaSource(mediaSources);
         }
+        // 套个虎皮+狼皮
         return maybeWrapWithAdsMediaSource(mediaItem, maybeClipMediaSource(mediaItem, mediaSource));
     }
     
     // internal methods
-    
+    // 剪辑视频则套一层 ClippingMediaSource
     private static MediaSource maybeClipMediaSource(MediaItem mediaItem, MediaSource mediaSource) {
+        // 非剪辑直接返回mediaSource，剪辑视频需要再套一层ClippingMediaSource
         if (mediaItem.clippingConfiguration.startPositionMs == 0
                 && mediaItem.clippingConfiguration.endPositionMs == C.TIME_END_OF_SOURCE
                 && !mediaItem.clippingConfiguration.relativeToDefaultPosition) {
@@ -434,6 +446,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
                 mediaItem.clippingConfiguration.relativeToDefaultPosition);
     }
     
+    // 广告视频则套一层 AdsMediaSource
     private MediaSource maybeWrapWithAdsMediaSource(MediaItem mediaItem, MediaSource mediaSource) {
         checkNotNull(mediaItem.localConfiguration);
         @Nullable
@@ -473,6 +486,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
     private static final class DelegateFactoryLoader {
         private final DataSource.Factory dataSourceFactory;
         private final ExtractorsFactory extractorsFactory;
+        // MediaSourceFactory缓存
         private final Map<Integer, @NullableType Supplier<MediaSourceFactory>>
                 mediaSourceFactorySuppliers;
         private final Set<Integer> supportedTypes;
@@ -500,19 +514,24 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
             mediaSourceFactories = new HashMap<>();
         }
         
+        // 获取支持的类型
         @C.ContentType
         public int[] getSupportedTypes() {
             ensureAllSuppliersAreLoaded();
             return Ints.toArray(supportedTypes);
         }
         
+        // 获取contentType对应的MediaSourceFactory
         @SuppressWarnings("deprecation") // Forwarding to deprecated methods.
         @Nullable
         public MediaSourceFactory getMediaSourceFactory(@C.ContentType int contentType) {
+            // 如果缓存中有，直接返回
             @Nullable MediaSourceFactory mediaSourceFactory = mediaSourceFactories.get(contentType);
             if (mediaSourceFactory != null) {
                 return mediaSourceFactory;
             }
+            
+            //根据contentType构建对应的MediaSourceFactory，创建失败（可能不支持）则直接返回空
             @Nullable
             Supplier<MediaSourceFactory> mediaSourceFactorySupplier = maybeLoadSupplier(contentType);
             if (mediaSourceFactorySupplier == null) {
@@ -601,6 +620,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
         
         @Nullable
         private Supplier<MediaSourceFactory> maybeLoadSupplier(@C.ContentType int contentType) {
+            // 缓存有，直接返回
             if (mediaSourceFactorySuppliers.containsKey(contentType)) {
                 return mediaSourceFactorySuppliers.get(contentType);
             }
@@ -610,12 +630,14 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
                 Class<? extends MediaSourceFactory> clazz;
                 switch (contentType) {
                     case C.TYPE_DASH:
+                        // 创建 Dash 对应的MediaSourceFactory
                         clazz =
                                 Class.forName("com.google.android.exoplayer2.source.dash.DashMediaSource$Factory")
                                         .asSubclass(MediaSourceFactory.class);
                         mediaSourceFactorySupplier = () -> newInstance(clazz, dataSourceFactory);
                         break;
                     case C.TYPE_SS:
+                        // 创建 Smooth Streaming 对应的MediaSourceFactory
                         clazz =
                                 Class.forName(
                                         "com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource$Factory")
@@ -623,18 +645,21 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
                         mediaSourceFactorySupplier = () -> newInstance(clazz, dataSourceFactory);
                         break;
                     case C.TYPE_HLS:
+                        // 创建 HLS 对应的MediaSourceFactory
                         clazz =
                                 Class.forName("com.google.android.exoplayer2.source.hls.HlsMediaSource$Factory")
                                         .asSubclass(MediaSourceFactory.class);
                         mediaSourceFactorySupplier = () -> newInstance(clazz, dataSourceFactory);
                         break;
                     case C.TYPE_RTSP:
+                        // 创建 RTSP 对应的MediaSourceFactory
                         clazz =
                                 Class.forName("com.google.android.exoplayer2.source.rtsp.RtspMediaSource$Factory")
                                         .asSubclass(MediaSourceFactory.class);
                         mediaSourceFactorySupplier = () -> newInstance(clazz);
                         break;
                     case C.TYPE_OTHER:
+                        // 创建 其他类型的MediaSourceFactory
                         mediaSourceFactorySupplier =
                                 () -> new ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory);
                         break;
@@ -644,8 +669,10 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
             } catch (ClassNotFoundException e) {
                 // Expected if the app was built without the specific module.
             }
+            // 入缓存
             mediaSourceFactorySuppliers.put(contentType, mediaSourceFactorySupplier);
             if (mediaSourceFactorySupplier != null) {
+                // 支持类型
                 supportedTypes.add(contentType);
             }
             return mediaSourceFactorySupplier;

@@ -44,6 +44,9 @@ import java.util.UUID;
 /**
  * Representation of a media item.
  */
+/*
+* 代表一个媒体item
+* */
 public final class MediaItem implements Bundleable {
     
     /**
@@ -951,6 +954,9 @@ public final class MediaItem implements Bundleable {
     /**
      * Properties for local playback.
      */
+    /*
+    * 本地播放的属性
+    * */
     // TODO: Mark this final when PlaybackProperties is deleted.
     public static class LocalConfiguration {
         
@@ -994,6 +1000,9 @@ public final class MediaItem implements Bundleable {
         /**
          * Optional subtitles to be sideloaded.
          */
+        /*
+        * 要侧载的可选字幕。
+        * */
         public final ImmutableList<SubtitleConfiguration> subtitleConfigurations;
         /**
          * @deprecated Use {@link #subtitleConfigurations} instead.
@@ -1574,6 +1583,9 @@ public final class MediaItem implements Bundleable {
     /**
      * Optionally clips the media item to a custom start and end position.
      */
+    /*
+    * （可选）将媒体项目剪辑到自定义开始和结束位置。
+    * */
     // TODO: Mark this final when ClippingProperties is deleted.
     public static class ClippingConfiguration implements Bundleable {
         
@@ -1818,6 +1830,9 @@ public final class MediaItem implements Bundleable {
      * The default media ID that is used if the media ID is not explicitly set by {@link
      * Builder#setMediaId(String)}.
      */
+    /*
+    * 未调用{@link Builder#setMediaId(String)}明确设置媒体 ID 时，使用默认媒体 ID
+    * */
     public static final String DEFAULT_MEDIA_ID = "";
     
     /**
@@ -1828,12 +1843,18 @@ public final class MediaItem implements Bundleable {
     /**
      * Identifies the media item.
      */
+    /**
+     * 媒体 item 的标识
+     */
     public final String mediaId;
     
     /**
      * Optional configuration for local playback. May be {@code null} if shared over process
      * boundaries.
      */
+    /*
+    * 本地播放的可选配置，进程共享场景下可能为空
+    * */
     @Nullable
     public final LocalConfiguration localConfiguration;
     /**
@@ -1856,6 +1877,9 @@ public final class MediaItem implements Bundleable {
     /**
      * The clipping properties.
      */
+    /*
+    * 剪辑属性。
+    * */
     public final ClippingConfiguration clippingConfiguration;
     /**
      * @deprecated Use {@link #clippingConfiguration} instead.

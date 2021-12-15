@@ -26,7 +26,11 @@ import java.util.List;
 /**
  * Timeline exposing concatenated timelines of playlist media sources.
  */
-/* package */ final class PlaylistTimeline extends AbstractConcatenatedTimeline {
+/*
+* 将播放列表媒体源 timelines 串起来的 Timeline
+* */
+/* package */
+final class PlaylistTimeline extends AbstractConcatenatedTimeline {
     
     private final int windowCount;
     private final int periodCount;

@@ -81,6 +81,11 @@ public interface MediaPeriod extends SequenceableLoader {
      *
      * @throws IOException The underlying error.
      */
+    /*
+    * 抛出一个阻止 period 准备好的错误。 如果不存在此类错误，则不执行任何操作。
+    *
+    * <p>只会在 period 完成 preparation 之前调用
+    * */
     void maybeThrowPrepareError() throws IOException;
     
     /**

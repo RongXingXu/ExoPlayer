@@ -886,7 +886,7 @@ final class MediaPeriodQueue {
         boolean isLastInTimeline = isLastInTimeline(timeline, id, isLastInPeriod);
         boolean isFollowedByTransitionToSameStream =
                 nextAdGroupIndex != C.INDEX_UNSET && period.isServerSideInsertedAdGroup(nextAdGroupIndex);
-        // 和广告挂钩如果有广告则为视频被剪裁播放广告组的位置，如果为后贴广告则为 C.TIME_END_OF_SOURCE
+        // 和广告挂钩，如果有广告则为视频被剪裁播放广告组的位置，如果为后贴广告则为 C.TIME_END_OF_SOURCE，无广告则为C.TIME_UNSET
         long endPositionUs =
                 nextAdGroupIndex != C.INDEX_UNSET
                         ? period.getAdGroupTimeUs(nextAdGroupIndex)

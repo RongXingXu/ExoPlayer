@@ -38,6 +38,9 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
  * A {@link MediaSource} that masks the {@link Timeline} with a placeholder until the actual media
  * structure is known.
  */
+/*
+* 一个 {@link MediaSource}，在知道实际媒体结构前，标识一个占位 {@link Timeline}。
+* */
 public final class MaskingMediaSource extends CompositeMediaSource<Void> {
     
     private final MediaSource mediaSource;
@@ -72,6 +75,7 @@ public final class MaskingMediaSource extends CompositeMediaSource<Void> {
                             initialTimeline, /* firstWindowUid= */ null, /* firstPeriodUid= */ null);
             hasRealTimeline = true;
         } else {
+            // 创建一个伪装 timeline 占位
             timeline = MaskingTimeline.createWithPlaceholderTimeline(mediaSource.getMediaItem());
         }
     }
@@ -107,7 +111,9 @@ public final class MaskingMediaSource extends CompositeMediaSource<Void> {
     @Override
     public MaskingMediaPeriod createPeriod(
             MediaPeriodId id, Allocator allocator, long startPositionUs) {
+        // 创建一个伪装 mediaPeriod
         MaskingMediaPeriod mediaPeriod = new MaskingMediaPeriod(id, allocator, startPositionUs);
+        // 设置 mediaSource
         mediaPeriod.setMediaSource(mediaSource);
         if (isPrepared) {
             MediaPeriodId idInSource = id.copyWithPeriodUid(getInternalPeriodUid(id.periodUid));

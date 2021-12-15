@@ -26,6 +26,9 @@ import com.google.android.exoplayer2.util.StandaloneMediaClock;
  * Default {@link MediaClock} which uses a renderer media clock and falls back to a {@link
  * StandaloneMediaClock} if necessary.
  */
+/*
+* 默认 {@link MediaClock} 。使用 renderer 媒体时钟并在必要时回退到 {@link StandaloneMediaClock}。
+* */
 /* package */
 final class DefaultMediaClock implements MediaClock {
     
@@ -130,6 +133,11 @@ final class DefaultMediaClock implements MediaClock {
      * Syncs internal clock if needed and returns current clock position in microseconds.
      *
      * @param isReadingAhead Whether the renderers are reading ahead.
+     */
+    /**
+     * 如果需要，则同步内部时钟；并以微秒为单位返回当前时钟位置。
+     *
+     * @param isReadingAhead 渲染器是否提前read下一个。
      */
     public long syncAndGetPositionUs(boolean isReadingAhead) {
         syncClocks(isReadingAhead);

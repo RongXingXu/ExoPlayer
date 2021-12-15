@@ -1225,6 +1225,7 @@ final class ExoPlayerImpl extends BasePlayer {
         }
     }
     
+    // 创建MediaSources by mediaItems
     private List<MediaSource> createMediaSources(List<MediaItem> mediaItems) {
         List<MediaSource> mediaSources = new ArrayList<>();
         for (int i = 0; i < mediaItems.size(); i++) {

@@ -61,6 +61,9 @@ final class MediaPeriodHolder {
     /**
      * Whether the media period has finished preparing.
      */
+    /*
+    * media period 是否完成preparing
+    * */
     public boolean prepared;
     /**
      * Whether any of the tracks of this media period are enabled.
@@ -206,7 +209,9 @@ final class MediaPeriodHolder {
      * @throws ExoPlaybackException If an error occurs during track selection.
      */
     public void handlePrepared(float playbackSpeed, Timeline timeline) throws ExoPlaybackException {
+        // prepared 状态位 置为true
         prepared = true;
+        
         trackGroups = mediaPeriod.getTrackGroups();
         TrackSelectorResult selectorResult = selectTracks(playbackSpeed, timeline);
         long requestedStartPositionUs = info.startPositionUs;

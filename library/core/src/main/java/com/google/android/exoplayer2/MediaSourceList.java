@@ -57,6 +57,12 @@ import java.util.Set;
  *
  * <p>With the exception of the constructor, all methods are called on the playback thread.
  */
+/*
+ * 连接多个 {@link MediaSource}。 {@link MediaSource} 列表可以在播放过程中修改。
+ * 同一 {@link MediaSource} 实例在播放列表中出现多次是有效的。
+ *
+ * <p>除构造函数外，所有方法都在播放线程上调用。
+ * */
 /* package */
 final class MediaSourceList {
     
@@ -314,6 +320,14 @@ final class MediaSourceList {
      * @param startPositionUs The expected start position, in microseconds.
      * @return A new {@link MediaPeriod}.
      */
+    /**
+     * 返回一个新的由{@code periodId}标识的{@link MediaPeriod}
+     *
+     * @param id              The identifier of the period.
+     * @param allocator       An {@link Allocator} from which to obtain media buffer allocations.
+     * @param startPositionUs The expected start position, in microseconds.
+     * @return A new {@link MediaPeriod}.
+     */
     public MediaPeriod createPeriod(
             MediaSource.MediaPeriodId id, Allocator allocator, long startPositionUs) {
         Object mediaSourceHolderUid = getMediaSourceHolderUid(id.periodUid);
@@ -495,7 +509,11 @@ final class MediaSourceList {
     /**
      * Data class to hold playlist media sources together with meta data needed to process them.
      */
-    /* package */ static final class MediaSourceHolder implements MediaSourceInfoHolder {
+    /*
+    * 将播放列表媒体源与处理它们所需的元数据保存在一起的数据类。
+    * */
+    /* package */
+    static final class MediaSourceHolder implements MediaSourceInfoHolder {
         
         public final MaskingMediaSource mediaSource;
         public final Object uid;

@@ -967,7 +967,7 @@ final class ExoPlayerImplInternal
             return;
         }
         
-        
+        // 获取当前正在播放的 MediaPeriodHolder
         @Nullable MediaPeriodHolder playingPeriodHolder = queue.getPlayingPeriod();
         if (playingPeriodHolder == null) {
             // We're still waiting until the playing period is available.
@@ -977,12 +977,14 @@ final class ExoPlayerImplInternal
         
         TraceUtil.beginSection("doSomeWork");
         
+        // 更新播放位置
         updatePlaybackPositions();
         
         boolean renderersEnded = true;
         boolean renderersAllowPlayback = true;
         if (playingPeriodHolder.prepared) {
             long rendererPositionElapsedRealtimeUs = SystemClock.elapsedRealtime() * 1000;
+            // 看着是释放当前播放位置之前的数据
             playingPeriodHolder.mediaPeriod.discardBuffer(
                     playbackInfo.positionUs - backBufferDurationUs, retainBackBufferFromKeyframe);
             for (int i = 0; i < renderers.length; i++) {
@@ -1014,6 +1016,7 @@ final class ExoPlayerImplInternal
         }
         
         long playingPeriodDurationUs = playingPeriodHolder.info.durationUs;
+        // 知否结束渲染标识
         boolean finishedRendering =
                 renderersEnded
                         && playingPeriodHolder.prepared
@@ -1977,7 +1980,7 @@ final class ExoPlayerImplInternal
             @Nullable
             MediaPeriodInfo info = queue.getNextMediaPeriodInfo(rendererPositionUs, playbackInfo);
             if (info != null) {
-                // 入队列
+                // 尝试创建一个 MediaPeriodHolder ， 加入队列
                 MediaPeriodHolder mediaPeriodHolder =
                         queue.enqueueNextMediaPeriodHolder(
                                 rendererCapabilities,
@@ -2231,10 +2234,12 @@ final class ExoPlayerImplInternal
     }
     
     private void handlePeriodPrepared(MediaPeriod mediaPeriod) throws ExoPlaybackException {
+        // mediaPeriod 没有loading 直接return
         if (!queue.isLoading(mediaPeriod)) {
             // Stale event.
             return;
         }
+        
         MediaPeriodHolder loadingPeriodHolder = queue.getLoadingPeriod();
         loadingPeriodHolder.handlePrepared(
                 mediaClock.getPlaybackParameters().speed, playbackInfo.timeline);

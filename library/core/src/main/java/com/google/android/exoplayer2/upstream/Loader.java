@@ -57,6 +57,9 @@ public final class Loader implements LoaderErrorThrower {
     /**
      * An object that can be loaded using a {@link Loader}.
      */
+    /*
+    * 可以被 {@link Loader} 加载的对象
+    * */
     public interface Loadable {
         
         /**
@@ -77,6 +80,19 @@ public final class Loader implements LoaderErrorThrower {
          * implementations should use their own flag to signal cancelation (for example, using {@link
          * AtomicBoolean}).
          */
+        /*
+        * 取消加载
+        *
+        * <p> Loadable 的实现需要确保在这个方法调用之后，当前正在执行的{@link #load()}调用将会相当快地退出。
+        * {@link #load()}也有可能因为returning或者抛出{@link IOException}退出。
+        *
+        * <p> 如果当前有一个正在执行的{@link #load()}调用，在cancelLoad方法调用之后，当前调用线程会马上中断。
+        * 因此，Loadable 的实现不需要（也不应该尝试）中断加载线程本身（外面已经调了）。
+        *
+        * <p>虽然加载线程会被中断，但 Loadable 实现不应使用 {@link #load()} 中加载线程的中断状态来确定加载是否已取消。
+        * 这种方法并不可靠 [内部参考：b/79223737]。 相反，实现应该使用自己的标志来表示取消（例如，使用 {@link AtomicBoolean}）。
+        *
+        * */
         void cancelLoad();
         
         /**
@@ -84,6 +100,11 @@ public final class Loader implements LoaderErrorThrower {
          *
          * @throws IOException If the input could not be loaded.
          */
+        /*
+        * 执行加载，完成或取消后返回。
+        *
+        * @throws IOException
+        * */
         void load() throws IOException;
     }
     
@@ -343,7 +364,7 @@ public final class Loader implements LoaderErrorThrower {
     }
     
     // Internal classes.
-    
+    // 加载任务（说好的单一职责呢？又是handler，又是Runnable）
     @SuppressLint("HandlerLeak")
     private final class LoadTask<T extends Loadable> extends Handler implements Runnable {
         
