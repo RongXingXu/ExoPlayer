@@ -1310,6 +1310,10 @@ public interface Player {
      * {@link MediaItem} respectively, and do nothing when there is no previous or next {@link
      * MediaItem} to move to.
      */
+    /*
+    * 不重复播放，“上一个”和“下一个”操作分别移动到上一个和下一个 {@link MediaItem}，
+    * 当没有上一个或下一个 {@link MediaItem} 移动到时什么也不做。
+    * */
     int REPEAT_MODE_OFF = 0;
     /**
      * Repeats the currently playing {@link MediaItem} infinitely during ongoing playback. "Previous"

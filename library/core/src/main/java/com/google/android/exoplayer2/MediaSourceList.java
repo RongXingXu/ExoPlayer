@@ -302,6 +302,7 @@ final class MediaSourceList {
      * Prepares the playlist.
      */
     public void prepare(@Nullable TransferListener mediaTransferListener) {
+        // 检查状态，如果isPrepared为true，抛出异常
         Assertions.checkState(!isPrepared);
         this.mediaTransferListener = mediaTransferListener;
         for (int i = 0; i < mediaSourceHolders.size(); i++) {

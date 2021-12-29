@@ -956,10 +956,11 @@ final class ExoPlayerImplInternal
     
     private void doSomeWork() throws ExoPlaybackException, IOException {
         long operationStartTimeMs = clock.uptimeMillis();
-        // 更新数据
+        Log.d(TAG, "[doSomeWork] operationStartTimeMs = " + operationStartTimeMs);
+        // step 1 更新数据
         updatePeriods();
         
-        // 检查状态IDLE和END状态直接清空消息队列，并return
+        // step 2 检查状态IDLE和END状态直接清空消息队列，并return
         if (playbackInfo.playbackState == Player.STATE_IDLE
                 || playbackInfo.playbackState == Player.STATE_ENDED) {
             // Remove all messages. Prepare (in case of IDLE) or seek (in case of ENDED) will resume.
@@ -967,7 +968,7 @@ final class ExoPlayerImplInternal
             return;
         }
         
-        // 获取当前正在播放的 MediaPeriodHolder
+        // 获取当前正在播放的 MediaPeriodHolder,若为空则抛事件重新调用doSomeWork，直到playingPeriodHolder不为空
         @Nullable MediaPeriodHolder playingPeriodHolder = queue.getPlayingPeriod();
         if (playingPeriodHolder == null) {
             // We're still waiting until the playing period is available.
@@ -977,9 +978,10 @@ final class ExoPlayerImplInternal
         
         TraceUtil.beginSection("doSomeWork");
         
-        // 更新播放位置
+        // step 3 更新播放位置
         updatePlaybackPositions();
         
+        // step 4 渲染
         boolean renderersEnded = true;
         boolean renderersAllowPlayback = true;
         if (playingPeriodHolder.prepared) {
@@ -1002,6 +1004,10 @@ final class ExoPlayerImplInternal
                 // the next stream or is waiting for the next stream. This is to avoid getting stuck if
                 // tracks in the current period have uneven durations and are still being read by another
                 // renderer. See: https://github.com/google/ExoPlayer/issues/1874.
+                // 确定渲染器是否允许继续播放。 如果渲染器准备好或结束，播放可以继续。
+                // 如果渲染器正在提前读入下一个流或正在等待下一个流，也继续播放。
+                // 这是为了避免在当前周期中的tracks具有不均匀的持续时间，并且仍在被另一个渲染器读取时卡住。
+                // See: https://github.com/google/ExoPlayer/issues/1874.
                 boolean isReadingAhead = playingPeriodHolder.sampleStreams[i] != renderer.getStream();
                 boolean isWaitingForNextStream = !isReadingAhead && renderer.hasReadStreamToEnd();
                 boolean allowsPlayback =
@@ -1015,14 +1021,16 @@ final class ExoPlayerImplInternal
             playingPeriodHolder.mediaPeriod.maybeThrowPrepareError();
         }
         
+        // step 5 结束判断以及结束逻辑处理
         long playingPeriodDurationUs = playingPeriodHolder.info.durationUs;
-        // 知否结束渲染标识
+        // 是否结束渲染标识
         boolean finishedRendering =
                 renderersEnded
                         && playingPeriodHolder.prepared
                         && (playingPeriodDurationUs == C.TIME_UNSET
                         || playingPeriodDurationUs <= playbackInfo.positionUs);
         if (finishedRendering && pendingPauseAtEndOfPeriod) {
+            // 播放结束后暂停
             pendingPauseAtEndOfPeriod = false;
             setPlayWhenReadyInternal(
                     /* playWhenReady= */ false,
@@ -1031,6 +1039,7 @@ final class ExoPlayerImplInternal
                     Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM);
         }
         if (finishedRendering && playingPeriodHolder.info.isFinal) {
+            // 播放结束之后，状态置为STATE_ENDED，并且stop renders
             setState(Player.STATE_ENDED);
             stopRenderers();
         } else if (playbackInfo.playbackState == Player.STATE_BUFFERING
@@ -1399,6 +1408,8 @@ final class ExoPlayerImplInternal
         isRebuffering = false;
         mediaClock.stop();
         rendererPositionUs = MediaPeriodQueue.INITIAL_RENDERER_POSITION_OFFSET_US;
+        
+        // disable renders
         for (Renderer renderer : renderers) {
             try {
                 disableRenderer(renderer);
@@ -1407,6 +1418,9 @@ final class ExoPlayerImplInternal
                 Log.e(TAG, "Disable failed.", e);
             }
         }
+        
+        // reset renders，强制renderer放弃持有的任何的resource，如果没有持有，则不做任何操作。
+        // 上面disable估计只有状态转换
         if (resetRenderers) {
             for (Renderer renderer : renderers) {
                 if (renderersToReset.remove(renderer)) {

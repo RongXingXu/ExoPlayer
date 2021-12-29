@@ -47,6 +47,11 @@ import java.lang.annotation.RetentionPolicy;
  * <p style="align:center"><img src="doc-files/renderer-states.svg" alt="Renderer state
  * transitions">
  */
+/*
+* 渲染从{@link SampleStream}读出来的媒体。
+*
+* <p>在内部，渲染器的生命周期由持有它的 {@link ExoPlayer} 管理。
+* */
 public interface Renderer extends PlayerMessage.Target {
     
     /**
@@ -349,6 +354,11 @@ public interface Renderer extends PlayerMessage.Target {
      * <p>This method may be called when the renderer is in the following states: {@link
      * #STATE_ENABLED}, {@link #STATE_STARTED}.
      */
+    /*
+    * 返回渲染器是否已将当前的 {@link SampleStream} 读到最后。
+    *
+    * <p>当渲染器处于以下状态时可以调用此方法：{@link #STATE_ENABLED}、{@link #STATE_STARTED}。
+    * */
     boolean hasReadStreamToEnd();
     
     /**
@@ -442,6 +452,25 @@ public interface Renderer extends PlayerMessage.Target {
      *                          measured at the start of the current iteration of the rendering loop.
      * @throws ExoPlaybackException If an error occurs.
      */
+    /**
+     * 增量渲染 {@link SampleStream}.
+     *
+     * <p>如果render的状态是{@link #STATE_ENABLED}，那么每次调用该方法都会去做render的准备工作，以便在render started
+     * 之后能马上渲染{@link SampleStream}，如果render的状态是{@link #STATE_STARTED}，那么每次调用该方法将在指定的媒体
+     * 位置同步渲染 {@link SampleStream}。
+     *
+     * <p>除非初始化render时，调用{@link #enable(RendererConfiguration, Format[],SampleStream, long, boolean, boolean, long, long)}
+     * 时，{@code mayRenderStartOfStream}传了false，否则render可以在{@link #STATE_ENABLED}状态时，直接渲染当前位置媒体最开始的地方。
+     *
+     * <p>此方法应快速返回，并且如果渲染器无法取得有用的进展时，不应阻塞。
+     *
+     * <p>当渲染器处于以下状态时，可能会调用此方法: {@link #STATE_ENABLED}, {@link #STATE_STARTED}.
+     *
+     * @param positionUs        当前媒体时间（以微秒为单位），在渲染循环的当前迭代开始时测量。
+     * @param elapsedRealtimeUs {@link android.os.SystemClock#elapsedRealtime()} us,在渲染循环的当前迭代开始时测量。
+     *
+     * @throws ExoPlaybackException If an error occurs.
+     */
     void render(long positionUs, long elapsedRealtimeUs) throws ExoPlaybackException;
     
     /**
@@ -496,5 +525,8 @@ public interface Renderer extends PlayerMessage.Target {
      * <p>This method may be called when the renderer is in the following states: {@link
      * #STATE_DISABLED}.
      */
+    /*
+    * 强制renderer放弃持有的任何的resource，如果没有持有，则不做任何操作
+    * */
     void reset();
 }

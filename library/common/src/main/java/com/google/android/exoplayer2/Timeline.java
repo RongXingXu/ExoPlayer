@@ -137,7 +137,7 @@ import java.util.List;
  * period. The period can be queried for information about the ad groups and the ads they contain.
  */
 /**
- * 媒体结构的灵活表死，一个timeline能够表示包含各种各样媒体的结构，从简单的单个媒体文件到复杂组合，如列表播放和包含广告的流。
+ * 媒体结构的灵活表示，一个timeline能够表示包含各种各样媒体的结构，从简单的单个媒体文件到复杂组合，如列表播放和包含广告的流。
  * 实例是不可变的。对于媒体动态变化的情况（例如实时流），时间线提供当前状态的快照。
  *
  * <p>一个timeline包含{@link Window Windows} 和 {@link Period Periods}.
@@ -1166,12 +1166,15 @@ public abstract class Timeline implements Bundleable {
             int windowIndex, @Player.RepeatMode int repeatMode, boolean shuffleModeEnabled) {
         switch (repeatMode) {
             case Player.REPEAT_MODE_OFF:
+                // 如果当前 windowIndex 不是最后一个Window，返回下一个 windowIndex + 1
                 return windowIndex == getLastWindowIndex(shuffleModeEnabled)
                         ? C.INDEX_UNSET
                         : windowIndex + 1;
             case Player.REPEAT_MODE_ONE:
+                // 返回当前 windowIndex
                 return windowIndex;
             case Player.REPEAT_MODE_ALL:
+                // 如果当前 windowIndex 不是最后一个Window，返回下一个 windowIndex + 1； 如果是，返回结构第一个
                 return windowIndex == getLastWindowIndex(shuffleModeEnabled)
                         ? getFirstWindowIndex(shuffleModeEnabled)
                         : windowIndex + 1;

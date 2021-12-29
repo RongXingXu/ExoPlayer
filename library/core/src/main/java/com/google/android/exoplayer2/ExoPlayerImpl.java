@@ -384,6 +384,8 @@ final class ExoPlayerImpl extends BasePlayer {
         // listeners to ensure that new operations issued in the listener notifications reach the
         // player after this prepare. The internal player can't change the playback info immediately
         // because it uses a callback.
+        // 在更新播放信息和通知外部listeners之前先触发internal prepare，以确保prepare是最先执行的，
+        // 后续listener通知中发出的新操作在其之后处理。内部播放器无法立即更改播放信息，因为它使用回调。
         pendingOperationAcks++;
         internalPlayer.prepare();
         // 更新播放器的 playbackInfo
@@ -1308,6 +1310,7 @@ final class ExoPlayerImpl extends BasePlayer {
         PlaybackInfo newPlaybackInfo = playbackInfo;
         this.playbackInfo = playbackInfo;
         
+        // 评估PlaybackInfo是否有变化，返回俩参数<Boolean, Integer>，Boolean表示是否有变化，Integer表示变化原因
         Pair<Boolean, Integer> mediaItemTransitionInfo =
                 evaluateMediaItemTransitionReason(
                         newPlaybackInfo,
@@ -1321,6 +1324,7 @@ final class ExoPlayerImpl extends BasePlayer {
         @Nullable MediaItem mediaItem = null;
         if (mediaItemTransitioned) {
             if (!newPlaybackInfo.timeline.isEmpty()) {
+                // 新PlaybackInfo的timeline不为空场景跟新，mediaItem
                 int windowIndex =
                         newPlaybackInfo.timeline.getPeriodByUid(newPlaybackInfo.periodId.periodUid, period)
                                 .windowIndex;
@@ -1342,6 +1346,7 @@ final class ExoPlayerImpl extends BasePlayer {
         mediaMetadata = newMediaMetadata;
         
         if (!previousPlaybackInfo.timeline.equals(newPlaybackInfo.timeline)) {
+            // 通知 timeline change
             listeners.queueEvent(
                     Player.EVENT_TIMELINE_CHANGED,
                     listener -> listener.onTimelineChanged(newPlaybackInfo.timeline, timelineChangeReason));
@@ -1560,8 +1565,10 @@ final class ExoPlayerImpl extends BasePlayer {
         Timeline oldTimeline = oldPlaybackInfo.timeline;
         Timeline newTimeline = playbackInfo.timeline;
         if (newTimeline.isEmpty() && oldTimeline.isEmpty()) {
+            // timeline都为空
             return new Pair<>(/* isTransitioning */ false, /* mediaItemTransitionReason */ C.INDEX_UNSET);
         } else if (newTimeline.isEmpty() != oldTimeline.isEmpty()) {
+            // 新旧timeline有diff，其中一个为空
             return new Pair<>(/* isTransitioning */ true, MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED);
         }
         
@@ -1572,6 +1579,7 @@ final class ExoPlayerImpl extends BasePlayer {
                 newTimeline.getPeriodByUid(playbackInfo.periodId.periodUid, period).windowIndex;
         Object newWindowUid = newTimeline.getWindow(newWindowIndex, window).uid;
         if (!oldWindowUid.equals(newWindowUid)) {
+            // 新旧window uid不一致
             @Player.MediaItemTransitionReason int transitionReason;
             if (positionDiscontinuity
                     && positionDiscontinuityReason == DISCONTINUITY_REASON_AUTO_TRANSITION) {

@@ -1490,6 +1490,9 @@ public interface ExoPlayer extends Player {
      *
      * @param pauseAtEndOfMediaItems Whether to pause playback at the end of each media item.
      */
+    /*
+    * 设置是否在每个媒体项目结束时暂停播放。
+    * */
     void setPauseAtEndOfMediaItems(boolean pauseAtEndOfMediaItems);
 
     /**

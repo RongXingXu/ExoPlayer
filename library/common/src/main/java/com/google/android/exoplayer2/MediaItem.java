@@ -955,7 +955,7 @@ public final class MediaItem implements Bundleable {
      * Properties for local playback.
      */
     /*
-    * 本地播放的属性
+    * 本地属性
     * */
     // TODO: Mark this final when PlaybackProperties is deleted.
     public static class LocalConfiguration {

@@ -42,6 +42,7 @@ public class SystemClock implements Clock {
     
     @Override
     public long uptimeMillis() {
+        // 从开机到现在的毫秒数（手机睡眠的时间不包括在内）
         return android.os.SystemClock.uptimeMillis();
     }
     

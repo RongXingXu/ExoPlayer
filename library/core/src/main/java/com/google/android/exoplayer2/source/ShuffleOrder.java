@@ -25,6 +25,10 @@ import java.util.Random;
  *
  * <p>The shuffle order must be immutable to ensure thread safety.
  */
+/*
+* 索引的无序排列。
+* 排列的索引顺序必须是不可变的，以确保线程安全。
+* */
 public interface ShuffleOrder {
     
     /**

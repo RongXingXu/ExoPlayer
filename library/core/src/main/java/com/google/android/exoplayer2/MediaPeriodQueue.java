@@ -38,7 +38,7 @@ import com.google.common.collect.ImmutableList;
  * the queue. Also has a reference to the media period currently being read.
  */
 /*
-* 持有媒体 periods 的队列，以及控制加载和更新队列的方法，队列从前面的当前播放媒体period开始到队列末尾的正在加载的媒体period结束。
+* 持有MediaPeriod的队列，以及控制加载和更新队列的方法，队列从前面的当前播放媒体period开始到队列末尾的正在加载的媒体period结束。
 * 还持有当前正在阅读的媒体 period 的引用。
 * */
 /* package */
