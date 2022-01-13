@@ -814,6 +814,7 @@ final class ExoPlayerImplInternal
         }
         this.offloadSchedulingEnabled = offloadSchedulingEnabled;
         @Player.State int state = playbackInfo.playbackState;
+        // offloadSchedulingEnabled为false时，只能在播放状态为 STATE_ENDED/STATE_IDLE 时更新
         if (offloadSchedulingEnabled || state == Player.STATE_ENDED || state == Player.STATE_IDLE) {
             playbackInfo = playbackInfo.copyWithOffloadSchedulingEnabled(offloadSchedulingEnabled);
         } else {
@@ -1065,8 +1066,10 @@ final class ExoPlayerImplInternal
         
         if (playbackInfo.playbackState == Player.STATE_BUFFERING) {
             for (int i = 0; i < renderers.length; i++) {
+                // 如果当前播放状态是STATE_BUFFERING，renderers停止读取数据
                 if (isRendererEnabled(renderers[i])
                         && renderers[i].getStream() == playingPeriodHolder.sampleStreams[i]) {
+                    // 停止读取数据
                     renderers[i].maybeThrowStreamError();
                 }
             }
@@ -1076,9 +1079,13 @@ final class ExoPlayerImplInternal
                 // Throw if the LoadControl prevents loading even if the buffer is empty or almost empty. We
                 // can't compare against 0 to account for small differences between the renderer position
                 // and buffered position in the media at the point where playback gets stuck.
+                // 当buffer为空或者快要空时，LoadControl仍然阻止loading数据，则抛出异常
                 throw new IllegalStateException("Playback stuck buffering and not loading");
             }
         }
+        
+        /******************offload************************/
+        // 如果offloadSchedulingEnabled不一致，更新flag
         if (offloadSchedulingEnabled != playbackInfo.offloadSchedulingEnabled) {
             playbackInfo = playbackInfo.copyWithOffloadSchedulingEnabled(offloadSchedulingEnabled);
         }
@@ -1131,6 +1138,7 @@ final class ExoPlayerImplInternal
     }
     
     private boolean maybeScheduleWakeup(long operationStartTimeMs, long intervalMs) {
+        
         if (offloadSchedulingEnabled && requestForRendererSleep) {
             return false;
         }

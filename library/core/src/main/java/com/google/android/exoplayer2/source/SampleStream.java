@@ -99,6 +99,9 @@ public interface SampleStream {
      *
      * @throws IOException The underlying error.
      */
+    /*
+    * 抛出一个error防止数据被读取。如果error不存在则不做任何事情
+    * */
     void maybeThrowError() throws IOException;
     
     /**
